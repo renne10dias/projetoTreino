@@ -1,0 +1,777 @@
+{
+  "schedule": {
+    "2024-10-14": {
+      "type": "Força",
+      "exercises": [
+        {
+          "category": "Bi-Set","details": "",
+          "sets": [
+
+              "Deadlift",
+              "Supino"
+
+          ]
+        },
+        {
+          "category": "Bi-Set",
+          "sets": [
+
+             "Agachamento Frontal",
+              "Remada Curvada"
+
+          ]
+        }
+      ]
+    },
+    "2024-10-15": {
+      "type": "Condicionamento",
+      "exercises": [
+        {
+          "category": "Mobilidade","details": "",
+          "sets": [
+            "Avião",
+            "Rotação Liga",
+            "Equilibrio Ketbell",
+            "Perdigueiro",
+            "Extensora com miniband"
+          ]
+        },
+        {
+          "category": "Cardio I","details": "",
+          "sets": [
+            "Burpee",
+            "Abs Supra",
+            "Remada Alta Kettlebell",
+            "Step up"
+          ]
+        },
+        {
+          "category": "Cardio II","details": "",
+          "sets": [
+            "Wall Ball",
+            "Sprow",
+            "Swing Kettlebell Alternado",
+            "Abs Bicicleta"
+          ]
+        }
+      ]
+    },
+    "2024-10-17": {
+      "type": "LPO",
+      "exercises": [
+        {
+          "category": "Aquecimento","details": "",
+          "sets": [
+            "Overhead Squat",
+            "Polichinelo",
+            "Supino com Anilha"
+          ]
+        },
+        {
+          "category": "Potência","details": "",
+          "sets": [
+            "Push Press",
+            "High Pull",
+            "Power Clean",
+            "Front Squat"
+          ]
+        },
+        {
+          "category": "Reforço Muscular","details": "",
+          "sets": [
+            "Bíceps",
+            "Tríceps"
+          ]
+        }
+      ]
+    },
+    "2024-10-18": {
+      "type": "Recovery",
+      "exercises": [
+          {
+          "category": "Descanso",
+          "details": "Joelho",
+          "sets":
+          [
+        "Alongamentos",
+        "Liberação Miofascial",
+        "Bota de Compressão"
+          ]
+        }
+      ]
+    },
+    "2024-10-21": {
+      "type": "Força",
+      "exercises": [
+        {
+          "category": "Dominâncias",
+          "details": "Joelho e empurrar",
+          "sets": ["Mobilidade Ombro", "Mobilidade Joelho","Estabilidade Joelho"]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": ["TRX","Flexão","Agachamento","Elevação de quadril unilateral"]
+        },
+        {
+          "category": "Força","details": "",
+          "sets": [
+            "Supino",
+            "Desenvolvimento",
+            "Elevação frontal"
+          ]
+        },
+        {
+          "category": "Força",
+          "sets": ["Agachamento","Búlgaro","Recuo + Step Up"]
+        }
+      ]
+    },
+    "2024-10-22": {
+      "type": "Fortalecimento Core",
+      "exercises": [
+        {
+          "category": "Mobilidade","details": "",
+          "sets": [
+            "Miniband"
+          ]
+        },
+        {
+          "category": "Cardio 1","details": "",
+          "sets": [
+            "Sprow com peso",
+            "Abs bicicleta",
+            "Swing alternado com kettlebell"
+          ]
+        },
+        {
+          "category": "Cardio 2","details": "",
+          "sets": [
+            "Abs dinâmico",
+            "Abs kettlebell alternado",
+            "Abs normal"
+          ]
+        }
+      ]
+    },
+    "2024-10-23": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade","details": "",
+          "sets": [
+            "Miofascial",
+            "Ombro, quadril, tórax"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "details": "Dorsais e Posterior",
+          "sets": [
+            "Prancha dinâmica com halter",
+            "Elevação de quadril unilateral",
+            "Perdigueiro"
+          ]
+        },
+        {
+          "category": "Principal",
+          "details": "Dorsais e Posterior",
+          "sets": [
+            "Puxada baixa / Flexão na bola ou TRX",
+            "Puxada alta / Stiff",
+            "Remada curvada / Elevação pélvica"
+          ]
+        }
+      ]
+    },
+    "2024-10-28": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade",
+          "details": "Joelho e empurrar",
+          "sets": ["Ombro","Joelho"]
+        },
+        {
+          "category": "Estabilidade",
+          "details": "Joelho",
+          "sets": [
+            "Ombro"
+          ]
+        },
+        {
+          "category": "Aquecimento","details": "",
+          "sets": [
+            "Supino anilha",
+            "Flexão",
+            "Agachamento com desenvolvimento"
+          ]
+        },
+        {
+          "category": "Principal","details": "",
+          "sets": [
+            "Supino",
+            "Step up",
+            "Elevação frontal"
+          ]
+        },
+        {
+          "category": "Principal","details": "",
+          "sets": [
+            "Agachamento",
+            "Desenvolvimento com barra",
+            "Elevação frontal"
+          ]
+        },
+        {
+          "category": "Tabata","details": "",
+          "sets": [
+            "Sprow",
+            "Clean"
+          ]
+        }
+      ]
+    },
+    "2024-10-29": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Landmine variações",
+          "details": "Landmine variações",
+          "sets": ["Ombro","Joelho"]
+        }
+      ]
+    },
+    "2024-10-30": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Auto Liberação",
+          "sets": [
+            "Auto liberação"
+          ]
+        },
+        {
+          "category": "Mobilidade",
+          "sets": [
+            "Mobilidade geral"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "TRX - 15",
+            "Ponte lateral 10/10",
+            "Elevação unilateral 10/10"
+          ]
+        },
+        {
+          "category": "Principal",
+          "sets": [
+            "Puxada baixa / flexão na bola",
+            "Crucifixo inclinado / stiff",
+            "Puxada alta / abd ad miniband"
+          ]
+        }
+      ]
+    },
+    "2024-10-31": {
+      "type": "Técnicas de LPO",
+      "exercises": [
+        {
+          "category": "Autoliberação Miofascial",
+          "sets": [
+            "Autoliberação miofascial"
+          ]
+        },
+        {
+          "category": "Mobilidade",
+          "sets": [
+            "Mobilidade"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "Overhead 15",
+            "Prancha com uma mão dinâmica 20",
+            "Remada alta + Agachamento 10"
+          ]
+        },
+        {
+          "category": "Principal",
+          "sets": [
+            "Push Press",
+            "High Pull",
+            "Power Clean"
+          ]
+        },
+        {
+          "category": "Core",
+          "sets": [
+            "Prancha",
+            "Abs remador",
+            "Flexão 'Pé a Pé'"
+          ]
+        }
+      ]
+    },
+    "2024-11-04": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Autoliberação",
+          "sets": [
+            "Autoliberação"
+          ]
+        },
+        {
+          "category": "Mobilidade",
+          "details": "Ombro e quadril",
+          "sets": [
+            "Mobilidade (ombro e quadril)"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "TRX",
+            "Elevação de quadril unilateral",
+            "Flexão",
+            "Agachamentos"
+          ]
+        },
+        {
+          "category": "Principal",
+          "details": "4x",
+          "sets": [
+            "Supino",
+            "Equilíbrio wall ball",
+            "Remada curvada",
+            "Passada lateral com miniband"
+          ]
+        },
+        {
+          "category": "Alongamento",
+          "sets": [
+            "Alongamento"
+          ]
+        }
+      ]
+    },
+    "2024-11-05": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Autoliberação",
+          "sets": [
+            "Autoliberação"
+          ]
+        },
+        {
+          "category": "Mobilidade",
+          "details": "Geral",
+          "sets": [
+            "Mobilidade geral"
+          ]
+        },
+        {
+          "category": "Core",
+          "sets": [
+            "Hiperextensão / Prancha na bola",
+            "Rotação na polia",
+            "Perdigueiro"
+          ]
+        },
+        {
+          "category": "Tabata",
+          "sets": [
+            "Ponte alta",
+            "Superman"
+          ]
+        }
+      ]
+    },
+     "2024-11-07": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Autoliberação",
+          "sets": [
+            "Auto liberação"
+          ]
+        },
+        {
+          "category": "Mobilidade",
+          "sets": [
+            "Mobilidade"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "details": "30 segundos cada",
+          "sets": [
+            "Miniband",
+            "Rotação liga",
+            "Prancha"
+          ]
+        },
+        {
+          "category": "Força",
+          "sets": [
+            "Remada baixa máquina",
+            "Step up"
+          ]
+        },
+        {
+          "category": "Desenvolvimento",
+          "sets": [
+            "Desenvolvimento",
+            "Elevação de quadril unilateral no banco"
+          ]
+        }
+      ]
+    },
+    "2024-11-13": {
+      "type": "Força",
+      "exercises": [
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "Flexão",
+            "Agachamento",
+            "RX",
+            "Deadlift kettlebell"
+          ]
+        },
+        {
+          "category": "Força",
+          "sets": [
+            "Supino",
+            "Remada supinada",
+            "Deadlift",
+            "Agachamento livre com barra"
+          ]
+        }
+      ]
+    },
+    "2024-11-14": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade",
+          "details": "Ombro e quadril",
+          "sets": [
+            "Mobilidade (ombro e quadril)"
+          ]
+        },
+        {
+          "category": "Ativação",
+          "sets": [
+            "Clean 12",
+            "Ponte alta 10/10",
+            "Swing alternado 10/10"
+          ]
+        },
+        {
+          "category": "Core",
+          "sets": [
+            "Prancha",
+            "Superman",
+            "Abs remador (anilha)",
+            "Abs russo",
+            "Ponte lateral"
+          ]
+        },
+        {
+          "category": "Reforço Muscular",
+          "sets": [
+            "Stiff",
+            "Flexão na bola unilateral",
+            "Abdução miniband"
+          ]
+        },
+        {
+          "category": "Cardio",
+          "sets": [
+            "Sprawl",
+            "Wall ball",
+            "Air bike"
+          ]
+        }
+      ]
+    },
+    "2024-11-18": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade",
+          "details": "Ombros e quadril",
+          "sets": [
+            "Mobilidade (ombros/quadril)"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "Agachamento com salto 10x",
+            "Flexão",
+            "Rotação de polia"
+          ]
+        },
+        {
+          "category": "Joelhos",
+          "sets": [
+            "Back Squat",
+            "Step up",
+            "Goblet Squat"
+          ]
+        },
+        {
+          "category": "Empurrar",
+          "sets": [
+            "Supino",
+            "Desenvolvimento",
+            "Tríceps polia"
+          ]
+        }
+      ]
+    },
+    "2024-11-19": {
+      "type": "Força e Condicionamento",
+      "exercises": [
+        {
+          "category": "Autoliberação",
+          "details": "Miofascial",
+          "sets": [
+            "Autoliberação miofascial"
+          ]
+        },
+        {
+          "category": "Mobilidade",
+          "details": "Geral",
+          "sets": [
+            "Mobilidade geral"
+          ]
+        },
+        {
+          "category": "Core",
+          "sets": [
+            "Abs remador",
+            "Abs borboleta",
+            "Rotação kettlebell",
+            "Ponte alta dinâmica",
+            "Ponte baixa"
+          ]
+        },
+        {
+          "category": "Cardio 1",
+          "sets": [
+            "Step up",
+            "Burpee",
+            "Air bike"
+          ]
+        },
+        {
+          "category": "Cardio 2",
+          "sets": [
+            "Swing kettlebell",
+            "Sprawl",
+            "Polichinelo"
+          ]
+        }
+      ]
+    },
+    "2024-11-21": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade",
+          "details": "Tórax e quadril",
+          "sets": [
+            "Mobilidade toráx/quadril"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "Elevação de quadril",
+            "Abdução com miniband",
+            "Clean com anilha"
+          ]
+        },
+        {
+          "category": "Força",
+          "sets": [
+            "Barra fixa",
+            "Remada cavalinho",
+            "Puxada baixa",
+            "Deadlift",
+            "Stiff",
+            "Elevação pélvica"
+          ]
+        }
+      ]
+    },
+    "2024-11-25": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade",
+          "details": "Ombros e quadril",
+          "sets": [
+            "Mobilidade ombros/quadril"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "Agachamento",
+            "Flexão",
+            "Perdigueiro"
+          ]
+        },
+        {
+          "category": "Joelhos",
+          "sets": [
+            "Back Squat",
+            "Recuo",
+            "Step up"
+          ]
+        },
+        {
+          "category": "Empurrar",
+          "sets": [
+            "Supino inclinado",
+            "Desenvolvimento",
+            "Elevação lateral"
+          ]
+        }
+      ]
+    },
+    "2024-11-27": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade",
+          "details": "Quadril e escápulas",
+          "sets": [
+            "Ponte alta dinâmica"
+          ]
+        },
+        {
+          "category": "Aquecimento",
+          "sets": [
+            "T.R.X 15",
+            "Elevação pélvica 10/10",
+            "Swing kettlebell 15"
+          ]
+        },
+        {
+          "category": "Principal",
+          "sets": [
+            "Puxada alta",
+            "Puxada baixa",
+            "Pull down",
+            "Deadlift",
+            "Flexora adaptada",
+            "Stiff",
+            "Elevação pélvica"
+          ]
+        }
+      ]
+    },
+    "2024-11-28": {
+      "type": "Força e Mobilidade",
+      "exercises": [
+        {
+          "category": "Mobilidade Geral",
+          "details": "Autoliberação miofascial",
+          "sets": []
+        },
+        {
+          "category": "Aquecimento",
+          "details": "",
+          "sets": [
+            "Agachamento com salto 20\"x10\" 4x",
+            "Superman",
+            "Polichinelo"
+          ]
+        },
+        {
+          "category": "Potência",
+          "details": "15\"x30\" 4x",
+          "sets": [
+            "Remada curvada",
+            "Push Press",
+            "Agachamento",
+            "High Pull"
+          ]
+        },
+        {
+          "category": "Tabata 1",
+          "details": "",
+          "sets": [
+            "Burpee",
+            "Abs Supra"
+          ]
+        },
+        {
+          "category": "Tabata 2",
+          "details": "",
+          "sets": [
+            "Corrida estacionária",
+            "Salto lateral"
+          ]
+        }
+      ]
+    },
+     "2024-12-30": {
+      "type": "Treino de Glúteos, Posterior de Coxa e Panturrilha",
+      "exercises": [
+        {
+          "category": "Glúteos",
+          "details": "3 séries, 30 repetições, 45s descanso",
+          "sets": ["Ostra com elástico"]
+
+          },
+            { "category": "Glúteos",
+               "sets": ["Elevação Pélvica com abdução de Quadril usando Elástico"],
+              "details": "3 séries, 20 repetições, 45s descanso"
+            }
+
+        ,
+        {
+          "category": "Posterior de Coxa",
+           "details": "3 séries, 15-12-10 repetições, 45s descanso",
+          "sets": ["Cadeira abdutora 90°"]
+        },
+            { "category": "Glúteos",
+              "sets": ["Elevação pélvica na máquina"],
+              "details": "3 séries, 15-12-10 repetições, 45s descanso"
+            },
+            {
+              "category": "Posterior de Coxa",
+              "sets": [ "Mesa flexora"],
+              "details": "3 séries, 15-12-10 repetições, 45s descanso"
+            },
+            {
+              "category": "Posterior de Coxa",
+              "sets":["Cadeira flexora"],
+              "details": "3 séries, 15-12-10 repetições, 45s descanso"
+            },
+        {
+          "category": "Panturrilha",
+          "details": "3 séries, 20 repetições, 45s descanso",
+          "sets": ["Panturrilha em pé na máquina"]
+        },
+            {
+               "category": "Panturrilha",
+              "sets": [ "Panturrilha no leg press"],
+              "details": "3 séries, 20 repetições, 45s descanso"
+            }
+          ]
+        }
+
+    }
+
+}
