@@ -1,12 +1,11 @@
-import os
-import re
-import streamlit as st
+import json
 
 import pandas as pd
+import streamlit as st
 from sklearn.cluster import KMeans
+import plotly.graph_objects as go
 
 from services.DashboardService.DashboardUtils import DashboardUtils
-from utils.DataLoader import DataLoader
 from utils.LoadFile import LoadFile
 
 
@@ -16,41 +15,9 @@ class DashboardService:
         self.dashboardUtils = DashboardUtils()
 
     def col1_intensidade_treino(self):
-        data_loader = DataLoader(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../data/bioData.json"))
-        json_data = data_loader.load_json_data()
-        df = data_loader.extract_data()
 
-        # Remove o dia da semana do campo 'start_time' e converte para datetime
-        df['start_time'] = df['start_time'].apply(
-            lambda x: re.match(r'\d{2}/\d{2}', x).group(0) + '/2024')
-        df['start_time'] = pd.to_datetime(df['start_time'], format='%d/%m/%Y')
-
-        # Formata as datas no hover
-        df['Data'] = df['start_time'].dt.strftime('%d/%m/%Y')
-
-        anos_unicos_Intensity = df["start_time"].dt.year.unique()
-        meses_unicos_en_Intensity = df["start_time"].dt.month.unique()
-
-        meses_pt = {
-            1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",
-            6: "Junho", 7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro",
-            11: "Novembro", 12: "Dezembro"
-        }
-
-        # Criar os widgets para seleção de ano e mês
-        col1_1, col1_2 = st.columns(2)
-        with col1_1:
-            selected_month_Intensity = st.selectbox(
-                "Selecione o mês",
-                [meses_pt[mes] for mes in meses_unicos_en_Intensity],
-                key="mes_intensidade"
-            )
-        with col1_2:
-            selected_year_Intensity = st.selectbox(
-                "Selecione o ano",
-                anos_unicos_Intensity,
-                key="ano_intensidade"
-            )
+        # Obtendo os dados da classe Utils
+        json_data, df, meses_pt, selected_month_Intensity, selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity()
 
         # Adicionar dados de frequência cardíaca ao DataFrame
         heart_rate_data = [entry["heart_rate"]["average"] for entry in json_data]
@@ -89,10 +56,6 @@ class DashboardService:
 
         return [df_filtrado, color_map]
 
-
-
-
-
     def col2_resumo_diario(self):
         # Carrega os dados
         treino_data = self.dashboardUtils.load_treino_data()
@@ -104,15 +67,182 @@ class DashboardService:
         data_str = data_selecionada.strftime("%Y-%m-%d")
         numero_exercicios = 0
 
-        calorias, frequencia_media, frequencia_maxima, duracao_diaria = self.dashboardUtils.get_calories_by_date(bio_data_full, data_selecionada)
-
+        calorias, frequencia_media, frequencia_maxima, duracao_diaria = self.dashboardUtils.get_calories_by_date(
+            bio_data_full, data_selecionada)
 
         if data_str in set_data["schedule"]:
             numero_exercicios = sum(len(exercise["sets"]) for exercise in set_data["schedule"][data_str]["exercises"])
 
-
-
-
         return [calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios]
 
+    def col3_indicador(self):
 
+
+        # Obtendo os dados da classe Utils
+        json_data, df, meses_pt, selected_month_Intensity, selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity("1")
+
+        # Carrega os dados
+        bio_data_full = self.loadFile.load_bio_data()
+        set_data = self.loadFile.load_set_data()
+
+
+
+
+
+        # Criar bio_data_df
+        bio_data_df = pd.DataFrame(bio_data_full)
+        bio_data_df["Data"] = pd.to_datetime(bio_data_df["start_time"]).dt.date
+        bio_data_df["Calorias"] = bio_data_df["calories"]
+        bio_data_df["Duração"] = (pd.to_timedelta(bio_data_df["duration"]) / pd.Timedelta(seconds=1)) / 60
+        bio_data_df["FC_Max"] = bio_data_df["heart_rate"].apply(
+            lambda x: x.get("maximum", 0) if isinstance(x, dict) else 0)
+        bio_data_df["FC_Media"] = bio_data_df["heart_rate"].apply(
+            lambda x: x.get("average", 0) if isinstance(x, dict) else 0)
+
+
+        treino_data_df = pd.DataFrame(set_data["schedule"].values())
+        treino_data_df["Data"] = pd.to_datetime(treino_data_df.index).date
+        treino_data_df = treino_data_df.explode("exercises")
+        treino_data_df = treino_data_df.reset_index(drop=True)
+        treino_data_df["Exercício"] = treino_data_df["exercises"].apply(
+            lambda x: x["sets"] if isinstance(x, dict) else None)
+
+        # Merge dos DataFrames
+        treino_data_df = treino_data_df.merge(
+            bio_data_df[["Data", "Calorias", "Duração", "FC_Max", "FC_Media"]],
+            on="Data",
+            how="left"
+        )
+
+        # Filtrar dados pelo mês e ano selecionados
+        mes_selecionado = [k for k, v in meses_pt.items() if v == selected_month_Intensity][0]
+        treino_data_filtrado = treino_data_df[
+            (pd.to_datetime(treino_data_df["Data"]).dt.year == selected_year_Intensity) &
+            (pd.to_datetime(treino_data_df["Data"]).dt.month == mes_selecionado)
+            ]
+
+        # Agrupar e somar métricas por mês e exercício
+        calorias_por_mes = treino_data_filtrado.groupby(["Data", "Exercício"], as_index=False).sum(
+            numeric_only=True)
+
+
+        # Converter a coluna "Data" para datetime, se ainda não estiver
+        bio_data_df["Data"] = pd.to_datetime(bio_data_df["Data"], errors='coerce')
+
+        # Filtrar os dados de bio_data_df com base no ano e mês selecionados
+        bio_data_filtrado = bio_data_df[
+            (bio_data_df["Data"].dt.year == selected_year_Intensity) &
+            (bio_data_df["Data"].dt.month == [k for k, v in meses_pt.items() if v == selected_month_Intensity][
+                0])
+            ]
+
+        return [bio_data_filtrado, selected_month_Intensity, calorias_por_mes]
+
+
+
+    def col4_exercícios_por_categoria(self):
+
+        st.subheader("Tabela de Exercícios por Categoria")
+        treino_data = self.dashboardUtils.load_treino_data()
+
+        data_selecionada = st.date_input(
+            "Data",
+            value=pd.to_datetime(treino_data["Data"].max()),
+            key="data_exercicio"
+        )
+
+        # Função para criar a tabela com todas as categorias dos exercícios e seus respectivos sets
+        def criar_tabela_categorias_por_dia(data_selecionada, set_data):
+            """
+            Retorna as categorias de todos os exercícios realizados na data selecionada,
+            com categorias, exercícios e detalhes expandidos.
+            """
+            data_str = data_selecionada.strftime("%Y-%m-%d")  # Formatar a data para string
+
+            # Verificar se a data está no conjunto de dados
+            if data_str not in set_data.get("schedule", {}):
+                st.write(f"Data {data_str} não encontrada no cronograma.")
+                return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
+
+            # Processar os exercícios do dia
+            categorias_sets = []
+            exercicios = set_data["schedule"][data_str].get("exercises", [])
+            if not exercicios:
+                st.write(f"Nenhum exercício encontrado para a data {data_str}.")
+                return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
+
+            # Iterar pelos exercícios
+            for ex in exercicios:
+                categoria = ex.get("category", "Desconhecida")
+                sets = ex.get("sets", [])
+
+                if sets:  # Se houver sets, processa
+                    if isinstance(sets[0], dict):  # Estrutura com dicionários
+                        for set_item in sets:
+                            exercicio = set_item.get('exercise', 'Sem exercício')
+                            detalhes = set_item.get('details', '').split(', ')
+                            detalhes_preenchidos = detalhes + [''] * (2 - len(detalhes))
+                            categorias_sets.append({
+                                "Categoria": categoria,
+                                "Exercício": exercicio,
+                                "Detalhe 1": detalhes_preenchidos[0],
+                                "Detalhe 2": detalhes_preenchidos[1]
+                            })
+                    else:  # Estrutura com strings simples
+                        for exercicio in sets:
+                            categorias_sets.append({
+                                "Categoria": categoria,
+                                "Exercício": exercicio,
+                                "Detalhe 1": "",
+                                "Detalhe 2": ""
+                            })
+                else:  # Caso a lista de sets esteja vazia
+                    categorias_sets.append({
+                        "Categoria": categoria,
+                        "Exercício": "Sem exercício",
+                        "Detalhe 1": "",
+                        "Detalhe 2": ""
+                    })
+
+            # Criar e retornar o DataFrame
+            return pd.DataFrame(categorias_sets)
+
+        set_data = self.loadFile.load_set_data()
+        # Gera a tabela com categorias para a data selecionada
+        tabela_categorias_dia = criar_tabela_categorias_por_dia(data_selecionada, set_data)
+
+        # Exibir a tabela no Plotly se houver dados
+        if not tabela_categorias_dia.empty:
+            st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
+
+            fig = go.Figure(
+                data=[go.Table(
+                    columnorder=[1, 2, 3, 4],
+                    columnwidth=[20, 30, 20, 20],  # Ajuste de largura das colunas
+                    header=dict(
+                        values=list(tabela_categorias_dia.columns),
+                        font=dict(size=14, color='white'),
+                        fill_color='#264653',
+                        align=['left', 'center'],
+                        height=30
+                    ),
+                    cells=dict(
+                        values=[tabela_categorias_dia[col].tolist() for col in tabela_categorias_dia.columns],
+                        font=dict(size=12, color='black'),
+                        fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
+                        align=['left', 'center'],
+                        height=25
+                    )
+                )]
+            )
+
+            fig.update_layout(
+                title_text="Exercícios por Categoria",
+                title_font=dict(size=18, color='#264653'),
+                margin=dict(l=0, r=10, b=10, t=40),
+                height=500
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.write("Nenhum exercício encontrado para a data selecionada.")
