@@ -140,109 +140,62 @@ class DashboardService:
 
 
 
-    def col4_exercícios_por_categoria(self):
+    def col4_exercícios_por_categoria(self, data_selecionada):
 
         st.subheader("Tabela de Exercícios por Categoria")
         treino_data = self.dashboardUtils.load_treino_data()
-
-        data_selecionada = st.date_input(
-            "Data",
-            value=pd.to_datetime(treino_data["Data"].max()),
-            key="data_exercicio"
-        )
-
-        # Função para criar a tabela com todas as categorias dos exercícios e seus respectivos sets
-        def criar_tabela_categorias_por_dia(data_selecionada, set_data):
-            """
-            Retorna as categorias de todos os exercícios realizados na data selecionada,
-            com categorias, exercícios e detalhes expandidos.
-            """
-            data_str = data_selecionada.strftime("%Y-%m-%d")  # Formatar a data para string
-
-            # Verificar se a data está no conjunto de dados
-            if data_str not in set_data.get("schedule", {}):
-                st.write(f"Data {data_str} não encontrada no cronograma.")
-                return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
-
-            # Processar os exercícios do dia
-            categorias_sets = []
-            exercicios = set_data["schedule"][data_str].get("exercises", [])
-            if not exercicios:
-                st.write(f"Nenhum exercício encontrado para a data {data_str}.")
-                return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
-
-            # Iterar pelos exercícios
-            for ex in exercicios:
-                categoria = ex.get("category", "Desconhecida")
-                sets = ex.get("sets", [])
-
-                if sets:  # Se houver sets, processa
-                    if isinstance(sets[0], dict):  # Estrutura com dicionários
-                        for set_item in sets:
-                            exercicio = set_item.get('exercise', 'Sem exercício')
-                            detalhes = set_item.get('details', '').split(', ')
-                            detalhes_preenchidos = detalhes + [''] * (2 - len(detalhes))
-                            categorias_sets.append({
-                                "Categoria": categoria,
-                                "Exercício": exercicio,
-                                "Detalhe 1": detalhes_preenchidos[0],
-                                "Detalhe 2": detalhes_preenchidos[1]
-                            })
-                    else:  # Estrutura com strings simples
-                        for exercicio in sets:
-                            categorias_sets.append({
-                                "Categoria": categoria,
-                                "Exercício": exercicio,
-                                "Detalhe 1": "",
-                                "Detalhe 2": ""
-                            })
-                else:  # Caso a lista de sets esteja vazia
-                    categorias_sets.append({
-                        "Categoria": categoria,
-                        "Exercício": "Sem exercício",
-                        "Detalhe 1": "",
-                        "Detalhe 2": ""
-                    })
-
-            # Criar e retornar o DataFrame
-            return pd.DataFrame(categorias_sets)
-
         set_data = self.loadFile.load_set_data()
-        # Gera a tabela com categorias para a data selecionada
-        tabela_categorias_dia = criar_tabela_categorias_por_dia(data_selecionada, set_data)
 
-        # Exibir a tabela no Plotly se houver dados
-        if not tabela_categorias_dia.empty:
-            st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
 
-            fig = go.Figure(
-                data=[go.Table(
-                    columnorder=[1, 2, 3, 4],
-                    columnwidth=[20, 30, 20, 20],  # Ajuste de largura das colunas
-                    header=dict(
-                        values=list(tabela_categorias_dia.columns),
-                        font=dict(size=14, color='white'),
-                        fill_color='#264653',
-                        align=['left', 'center'],
-                        height=30
-                    ),
-                    cells=dict(
-                        values=[tabela_categorias_dia[col].tolist() for col in tabela_categorias_dia.columns],
-                        font=dict(size=12, color='black'),
-                        fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
-                        align=['left', 'center'],
-                        height=25
-                    )
-                )]
-            )
+        data_str = data_selecionada.strftime("%Y-%m-%d")  # Formatar a data para string
 
-            fig.update_layout(
-                title_text="Exercícios por Categoria",
-                title_font=dict(size=18, color='#264653'),
-                margin=dict(l=0, r=10, b=10, t=40),
-                height=500
-            )
+        # Verificar se a data está no conjunto de dados
+        if data_str not in set_data.get("schedule", {}):
+            st.write(f"Data {data_str} não encontrada no cronograma.")
+            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
 
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.write("Nenhum exercício encontrado para a data selecionada.")
+        # Processar os exercícios do dia
+        categorias_sets = []
+        exercicios = set_data["schedule"][data_str].get("exercises", [])
+        if not exercicios:
+            st.write(f"Nenhum exercício encontrado para a data {data_str}.")
+            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
+
+        # Iterar pelos exercícios
+        for ex in exercicios:
+            categoria = ex.get("category", "Desconhecida")
+            sets = ex.get("sets", [])
+
+            if sets:  # Se houver sets, processa
+                if isinstance(sets[0], dict):  # Estrutura com dicionários
+                    for set_item in sets:
+                        exercicio = set_item.get('exercise', 'Sem exercício')
+                        detalhes = set_item.get('details', '').split(', ')
+                        detalhes_preenchidos = detalhes + [''] * (2 - len(detalhes))
+                        categorias_sets.append({
+                            "Categoria": categoria,
+                            "Exercício": exercicio,
+                            "Detalhe 1": detalhes_preenchidos[0],
+                            "Detalhe 2": detalhes_preenchidos[1]
+                        })
+                else:  # Estrutura com strings simples
+                    for exercicio in sets:
+                        categorias_sets.append({
+                            "Categoria": categoria,
+                            "Exercício": exercicio,
+                            "Detalhe 1": "",
+                            "Detalhe 2": ""
+                        })
+            else:  # Caso a lista de sets esteja vazia
+                categorias_sets.append({
+                    "Categoria": categoria,
+                    "Exercício": "Sem exercício",
+                    "Detalhe 1": "",
+                    "Detalhe 2": ""
+                })
+
+        # Criar e retornar o DataFrame
+        return pd.DataFrame(categorias_sets)
+
+
+

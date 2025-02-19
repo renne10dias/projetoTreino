@@ -215,7 +215,52 @@ class DashboardView:
         st.subheader("Tabela de Exercícios por Categoria")
         with st.expander("Exercícios"):
 
-            self.service.col4_exercícios_por_categoria()
+            st.subheader("Tabela de Exercícios por Categoria")
+            treino_data = self.dashboardUtils.load_treino_data()
+
+            data_selecionada = st.date_input(
+                "Data",
+                value=pd.to_datetime(treino_data["Data"].max()),
+                key="data_exercicio"
+            )
+
+            tabela_categorias_dia = self.service.col4_exercícios_por_categoria(data_selecionada)
+
+            # Exibir a tabela no Plotly se houver dados
+            if not tabela_categorias_dia.empty:
+                st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
+
+                fig = go.Figure(
+                    data=[go.Table(
+                        columnorder=[1, 2, 3, 4],
+                        columnwidth=[20, 30, 20, 20],  # Ajuste de largura das colunas
+                        header=dict(
+                            values=list(tabela_categorias_dia.columns),
+                            font=dict(size=14, color='white'),
+                            fill_color='#264653',
+                            align=['left', 'center'],
+                            height=30
+                        ),
+                        cells=dict(
+                            values=[tabela_categorias_dia[col].tolist() for col in tabela_categorias_dia.columns],
+                            font=dict(size=12, color='black'),
+                            fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
+                            align=['left', 'center'],
+                            height=25
+                        )
+                    )]
+                )
+
+                fig.update_layout(
+                    title_text="Exercícios por Categoria",
+                    title_font=dict(size=18, color='#264653'),
+                    margin=dict(l=0, r=10, b=10, t=40),
+                    height=500
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.write("Nenhum exercício encontrado para a data selecionada.")
 
 
 
