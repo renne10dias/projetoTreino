@@ -19,27 +19,60 @@ class DashboardView:
 
         st.set_page_config(page_title='Dashboard - Treino', layout='wide')
 
-
-
         treino_data = self.dashboardUtils.load_treino_data()
         data_selecionada = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
         calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(
             data_selecionada)
 
-
         m1, m2, m3, m4, m5 = st.columns((1, 1, 1, 1, 1))
 
+        img_test = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-solid.svg")
+        # Lendo o conteúdo do arquivo SVG
+        with open(img_test, "r") as file:
+            svg_content = file.read()
 
-        m1.metric(label='💛 Freq. Cardíaca Média (bpm)', value=int(frequencia_media))
+        # Criando métricas com ícones ao lado do valor
+        m1.markdown(f"""
+            <div style="text-align: center;">
+                <h4>Freq. Cardíaca Média</h4>
+                <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 100%; height: 100%; color: red; fill: red;">
+                            {svg_content}
+                        </div>
+                    </span>
+                    {frequencia_media} bpm
+                </h2>
+            </div>
+        """, unsafe_allow_html=True)
 
-        m2.metric(label='❤️ Freq. Cardíaca Máxima (bpm)', value=int(frequencia_maxima))
+        m2.markdown(f"""
+            <div style="text-align: center;">
+                <h4>Freq.Cardíaca Máxima</h4>
+                <h2>❤️ {frequencia_maxima} bpm</h2>
+            </div>
+        """, unsafe_allow_html=True)
 
-        m3.metric(label='🔥 Calorias Perdidas', value=str(int(calorias)))
+        m3.markdown(f"""
+            <div style="text-align: center;">
+                <h4>Calorias Perdidas</h4>
+                <h2>🔥 {calorias}</h2>
+            </div>
+        """, unsafe_allow_html=True)
 
-        m4.metric(label='⏱️ Duração Total (min)', value=str(int(duracao_diaria)))
+        m4.markdown(f"""
+            <div style="text-align: center;">
+                <h4>Duração Total</h4>
+                <h2>⏳ {duracao_diaria} min</h2>
+            </div>
+        """, unsafe_allow_html=True)
 
-        m5.metric(label=' Número de Exercícios', value=int(numero_exercicios))
-
+        m5.markdown(f"""
+            <div style="text-align: center;">
+                <h4>Número de Exercícios</h4>
+                <h2>💪 {numero_exercicios}</h2>
+            </div>
+        """, unsafe_allow_html=True)
 
 
 
@@ -52,7 +85,6 @@ class DashboardView:
             st.subheader("Intensidade do Treino")
             # Obtendo os dados do serviço
             df_filtrado, color_map = self.service.col1_intensidade_treino()
-
 
             # Verifica se há dados antes de criar o gráfico
             if df_filtrado.empty:
@@ -125,13 +157,6 @@ class DashboardView:
                     st.plotly_chart(fig, use_container_width=True)
                 else:
                     st.write("Nenhum exercício encontrado para a data selecionada.")
-
-
-
-
-
-
-
 
         st.subheader("Indicador")
 
@@ -259,9 +284,3 @@ class DashboardView:
 
             # Exibir o gráfico no Streamlit
             st.plotly_chart(fig_frequencia_media, use_container_width=True)
-
-
-
-
-
-
