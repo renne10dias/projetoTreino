@@ -19,60 +19,86 @@ class DashboardView:
 
         st.set_page_config(page_title='Dashboard - Treino', layout='wide')
 
-        treino_data = self.dashboardUtils.load_treino_data()
-        data_selecionada = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
-        calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(
-            data_selecionada)
 
+
+
+        img_heart_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-solid.svg")
+        img_heart_solid_pulse = os.path.join(os.path.dirname(os.path.abspath(__file__)),"../images/heart-pulse-solid.svg")
+        img_fire_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)),"../images/fire-solid.svg")
+
+        # Lendo o conteúdo do arquivo SVG corretamente
+        with open(img_heart_solid, "r") as file:
+            svg_heart_solid = file.read()
+
+        with open(img_heart_solid_pulse, "r") as file:
+            svg_heart_solid_pulse = file.read()
+
+        with open(img_fire_solid, "r") as file:
+            svg_fire_solid = file.read()
+
+        # Criando as métricas em colunas
         m1, m2, m3, m4, m5 = st.columns((1, 1, 1, 1, 1))
 
-        img_test = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-solid.svg")
-        # Lendo o conteúdo do arquivo SVG
-        with open(img_test, "r") as file:
-            svg_content = file.read()
+        with m1:
+            treino_data = self.dashboardUtils.load_treino_data()
+            data_selecionada = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
+            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(
+                data_selecionada)
 
-        # Criando métricas com ícones ao lado do valor
-        m1.markdown(f"""
-            <div style="text-align: center;">
-                <h4>Freq. Cardíaca Média</h4>
-                <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 100%; height: 100%; color: red; fill: red;">
-                            {svg_content}
-                        </div>
-                    </span>
-                    {frequencia_media} bpm
-                </h2>
-            </div>
-        """, unsafe_allow_html=True)
 
-        m2.markdown(f"""
-            <div style="text-align: center;">
-                <h4>Freq.Cardíaca Máxima</h4>
-                <h2>❤️ {frequencia_maxima} bpm</h2>
-            </div>
-        """, unsafe_allow_html=True)
+        with m2:
+            st.markdown(f"""
+                    <div style="text-align: center;">
+                        <h4>Freq. Cardíaca Média</h4>
+                        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 100%; height: 100%; color: red; fill: red;">
+                                    {svg_heart_solid}
+                                </div>
+                            </span>
+                            {frequencia_media} bpm
+                        </h2>
+                    </div>
+                """, unsafe_allow_html=True)
 
-        m3.markdown(f"""
-            <div style="text-align: center;">
-                <h4>Calorias Perdidas</h4>
-                <h2>🔥 {calorias}</h2>
-            </div>
-        """, unsafe_allow_html=True)
+        with m3:
+            st.markdown(f"""
+                    <div style="text-align: center;">
+                        <h4>Freq.Cardíaca Máxima</h4>
+                        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 100%; height: 100%; color: red; fill: red;">
+                                    {svg_heart_solid_pulse}
+                                </div>
+                            </span>
+                            {frequencia_maxima} bpm
+                        </h2>
+                    </div>
+                """, unsafe_allow_html=True)
 
-        m4.markdown(f"""
-            <div style="text-align: center;">
-                <h4>Duração Total</h4>
-                <h2>⏳ {duracao_diaria} min</h2>
-            </div>
-        """, unsafe_allow_html=True)
+        with m4:
+            st.markdown(f"""
+                   <div style="text-align: center;">
+                       <h4>Calorias Perdidas</h4>
+                       <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                           <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                               <div style="width: 100%; height: 100%; color: red; fill: red;">
+                                   {svg_fire_solid}
+                               </div>
+                           </span>
+                           {calorias}
+                       </h2>
+                   </div>
+               """, unsafe_allow_html=True)
 
-        m5.markdown(f"""
-            <div style="text-align: center;">
-                <h4>Número de Exercícios</h4>
-                <h2>💪 {numero_exercicios}</h2>
-            </div>
-        """, unsafe_allow_html=True)
+
+
+
+
+
+
+
+
 
 
 
