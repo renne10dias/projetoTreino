@@ -28,11 +28,36 @@ class DashboardView:
         t2.markdown(
             " **tel:** 01392 451192 **| website:** https://www.swast.nhs.uk **| email:** mailto:data.science@swast.nhs.uk")
 
-        """Cria o gráfico de intensidade do treino e exibe no Streamlit."""
+
+
+
+
+        treino_data = self.dashboardUtils.load_treino_data()
+        data_selecionada = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
+        calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(
+            data_selecionada)
+
+
+        m1, m2, m3, m4, m5 = st.columns((1, 1, 1, 1, 1))
+
+
+        m1.metric(label='💛 Freq. Cardíaca Média (bpm)', value=int(frequencia_media))
+
+        m2.metric(label='❤️ Freq. Cardíaca Máxima (bpm)', value=int(frequencia_maxima))
+
+        m3.metric(label='🔥 Calorias Perdidas', value=str(int(calorias)))
+
+        m4.metric(label='⏱️ Duração Total (min)', value=str(int(duracao_diaria)))
+
+        m5.metric(label=' Número de Exercícios', value=int(numero_exercicios))
+
+
+
+
+        # Cria colunas para o grid de 2 gráficos
         col1, col2 = st.columns(2)
 
-
-
+        """Cria o gráfico de intensidade do treino e exibe no Streamlit."""
 
         with col1:
             st.subheader("Intensidade do Treino")
@@ -62,25 +87,60 @@ class DashboardView:
 
             st.plotly_chart(fig, use_container_width=True)
 
-
-
-
-
         with col2:
-            st.subheader("Resumo Diário")
-            # Obtendo os dados do serviço
-            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario()
+            st.subheader("Tabela de Exercícios por Categoria")
+            with st.expander("Tabela de Exercícios por Categoria"):
+
+                treino_data = self.dashboardUtils.load_treino_data()
+
+                data_selecionada = st.date_input(
+                    "Data",
+                    value=pd.to_datetime(treino_data["Data"].max()),
+                    key="data_exercicio"
+                )
+
+                tabela_categorias_dia = self.service.col4_exercícios_por_categoria(data_selecionada)
+
+                # Exibir a tabela no Plotly se houver dados
+                if not tabela_categorias_dia.empty:
+                    st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
+
+                    fig = go.Figure(
+                        data=[go.Table(
+                            columnorder=[1, 2, 3, 4],
+                            columnwidth=[20, 30, 20, 20],  # Ajuste de largura das colunas
+                            header=dict(
+                                values=list(tabela_categorias_dia.columns),
+                                font=dict(size=14, color='white'),
+                                fill_color='#264653',
+                                align=['left', 'center'],
+                                height=30
+                            ),
+                            cells=dict(
+                                values=[tabela_categorias_dia[col].tolist() for col in tabela_categorias_dia.columns],
+                                font=dict(size=12, color='black'),
+                                fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
+                                align=['left', 'center'],
+                                height=25
+                            )
+                        )]
+                    )
+
+                    fig.update_layout(
+                        title_text="Exercícios por Categoria",
+                        title_font=dict(size=18, color='#264653'),
+                        margin=dict(l=0, r=10, b=10, t=40),
+                        height=500
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.write("Nenhum exercício encontrado para a data selecionada.")
 
 
-            col_icon1, col_icon2 = st.columns(2)
-            with col_icon1:
-                st.metric("💛 Freq. Cardíaca Média (bpm)", int(frequencia_media))
-                st.metric("❤️ Freq. Cardíaca Máxima (bpm)", int(frequencia_maxima))
 
-            with col_icon2:
-                st.metric("🔥 Calorias Perdidas", int(calorias))
-                st.metric("⏱️ Duração Total (min)", int(duracao_diaria))
-                st.metric("🏃 Número de Exercícios", numero_exercicios)
+
+
 
 
 
@@ -212,55 +272,7 @@ class DashboardView:
             st.plotly_chart(fig_frequencia_media, use_container_width=True)
 
 
-        st.subheader("Tabela de Exercícios por Categoria")
-        with st.expander("Exercícios"):
 
-            st.subheader("Tabela de Exercícios por Categoria")
-            treino_data = self.dashboardUtils.load_treino_data()
-
-            data_selecionada = st.date_input(
-                "Data",
-                value=pd.to_datetime(treino_data["Data"].max()),
-                key="data_exercicio"
-            )
-
-            tabela_categorias_dia = self.service.col4_exercícios_por_categoria(data_selecionada)
-
-            # Exibir a tabela no Plotly se houver dados
-            if not tabela_categorias_dia.empty:
-                st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
-
-                fig = go.Figure(
-                    data=[go.Table(
-                        columnorder=[1, 2, 3, 4],
-                        columnwidth=[20, 30, 20, 20],  # Ajuste de largura das colunas
-                        header=dict(
-                            values=list(tabela_categorias_dia.columns),
-                            font=dict(size=14, color='white'),
-                            fill_color='#264653',
-                            align=['left', 'center'],
-                            height=30
-                        ),
-                        cells=dict(
-                            values=[tabela_categorias_dia[col].tolist() for col in tabela_categorias_dia.columns],
-                            font=dict(size=12, color='black'),
-                            fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
-                            align=['left', 'center'],
-                            height=25
-                        )
-                    )]
-                )
-
-                fig.update_layout(
-                    title_text="Exercícios por Categoria",
-                    title_font=dict(size=18, color='#264653'),
-                    margin=dict(l=0, r=10, b=10, t=40),
-                    height=500
-                )
-
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.write("Nenhum exercício encontrado para a data selecionada.")
 
 
 

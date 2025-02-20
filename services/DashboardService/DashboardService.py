@@ -13,32 +13,38 @@ class DashboardService:
     def __init__(self):
         self.loadFile = LoadFile()
         self.dashboardUtils = DashboardUtils()
+        self.json_data = None
+        self.df = None
+        self.meses_pt = None
+        self.selected_month_Intensity = None
+        self.selected_year_Intensity = None
 
     def col1_intensidade_treino(self):
 
         # Obtendo os dados da classe Utils
-        json_data, df, meses_pt, selected_month_Intensity, selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity()
+        self.json_data, self.df, self.meses_pt, self.selected_month_Intensity,  self.selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity("1")
+
 
         # Adicionar dados de frequência cardíaca ao DataFrame
-        heart_rate_data = [entry["heart_rate"]["average"] for entry in json_data]
-        df['heart_rate_avg'] = heart_rate_data
+        heart_rate_data = [entry["heart_rate"]["average"] for entry in self.json_data]
+        self.df['heart_rate_avg'] = heart_rate_data
 
         # Selecionar as colunas para o clustering
-        X = df[['heart_rate_avg', 'calories']]
+        X = self.df[['heart_rate_avg', 'calories']]
 
         # Aplicar K-means com 3 clusters
         kmeans = KMeans(n_clusters=3, random_state=0).fit(X)
-        df['cluster'] = kmeans.labels_
+        self.df['cluster'] = kmeans.labels_
 
         # Calcular a média de frequência cardíaca e calorias por cluster
-        cluster_means = df.groupby('cluster')[['heart_rate_avg', 'calories']].mean()
+        cluster_means = self.df.groupby('cluster')[['heart_rate_avg', 'calories']].mean()
 
         # Ordenar os clusters por calorias e atribuir rótulos baseados nas médias
         sorted_clusters = cluster_means.sort_values(by='calories')
         cluster_labels = {sorted_clusters.index[0]: 'Baixa Intensidade',
                           sorted_clusters.index[1]: 'Intensidade Moderada',
                           sorted_clusters.index[2]: 'Alta Intensidade'}
-        df['cluster_category'] = df['cluster'].map(cluster_labels)
+        self.df['cluster_category'] = self.df['cluster'].map(cluster_labels)
 
         # Definir cores para cada categoria de cluster
         color_map = {
@@ -48,21 +54,20 @@ class DashboardService:
         }
 
         # Filtrar o DataFrame pelo mês e ano selecionados
-        mes_selecionado_num = {v: k for k, v in meses_pt.items()}[selected_month_Intensity]
-        df_filtrado = df[
-            (df['start_time'].dt.year == selected_year_Intensity) &
-            (df['start_time'].dt.month == mes_selecionado_num)
+        mes_selecionado_num = {v: k for k, v in self.meses_pt.items()}[self.selected_month_Intensity]
+        df_filtrado = self.df[
+            (self.df['start_time'].dt.year == self.selected_year_Intensity) &
+            (self.df['start_time'].dt.month == mes_selecionado_num)
             ]
 
         return [df_filtrado, color_map]
 
-    def col2_resumo_diario(self):
+    def col2_resumo_diario(self, data_selecionada):
         # Carrega os dados
-        treino_data = self.dashboardUtils.load_treino_data()
         bio_data_full = self.loadFile.load_bio_data()
         set_data = self.loadFile.load_set_data()
 
-        data_selecionada = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
+
 
         data_str = data_selecionada.strftime("%Y-%m-%d")
         numero_exercicios = 0
@@ -77,9 +82,6 @@ class DashboardService:
 
     def col3_indicador(self):
 
-
-        # Obtendo os dados da classe Utils
-        json_data, df, meses_pt, selected_month_Intensity, selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity("1")
 
         # Carrega os dados
         bio_data_full = self.loadFile.load_bio_data()
@@ -115,9 +117,9 @@ class DashboardService:
         )
 
         # Filtrar dados pelo mês e ano selecionados
-        mes_selecionado = [k for k, v in meses_pt.items() if v == selected_month_Intensity][0]
+        mes_selecionado = [k for k, v in self.meses_pt.items() if v == self.selected_month_Intensity][0]
         treino_data_filtrado = treino_data_df[
-            (pd.to_datetime(treino_data_df["Data"]).dt.year == selected_year_Intensity) &
+            (pd.to_datetime(treino_data_df["Data"]).dt.year == self.selected_year_Intensity) &
             (pd.to_datetime(treino_data_df["Data"]).dt.month == mes_selecionado)
             ]
 
@@ -131,19 +133,17 @@ class DashboardService:
 
         # Filtrar os dados de bio_data_df com base no ano e mês selecionados
         bio_data_filtrado = bio_data_df[
-            (bio_data_df["Data"].dt.year == selected_year_Intensity) &
-            (bio_data_df["Data"].dt.month == [k for k, v in meses_pt.items() if v == selected_month_Intensity][
+            (bio_data_df["Data"].dt.year == self.selected_year_Intensity) &
+            (bio_data_df["Data"].dt.month == [k for k, v in self.meses_pt.items() if v == self.selected_month_Intensity][
                 0])
             ]
 
-        return [bio_data_filtrado, selected_month_Intensity, calorias_por_mes]
+        return [bio_data_filtrado, self.selected_month_Intensity, calorias_por_mes]
 
 
 
     def col4_exercícios_por_categoria(self, data_selecionada):
 
-        st.subheader("Tabela de Exercícios por Categoria")
-        treino_data = self.dashboardUtils.load_treino_data()
         set_data = self.loadFile.load_set_data()
 
 
