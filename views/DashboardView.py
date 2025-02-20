@@ -14,17 +14,18 @@ class DashboardView:
     def __init__(self):
         self.service = DashboardService()
         self.dashboardUtils = DashboardUtils()
+        self.data_selecionada_card_table = None
 
     def create_intensity_chart(self):
 
         st.set_page_config(page_title='Dashboard - Treino', layout='wide')
 
-
-
+        treino_data = self.dashboardUtils.load_treino_data()
 
         img_heart_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-solid.svg")
-        img_heart_solid_pulse = os.path.join(os.path.dirname(os.path.abspath(__file__)),"../images/heart-pulse-solid.svg")
-        img_fire_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)),"../images/fire-solid.svg")
+        img_heart_solid_pulse = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                             "../images/heart-pulse-solid.svg")
+        img_fire_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/fire-solid.svg")
 
         # Lendo o conteúdo do arquivo SVG corretamente
         with open(img_heart_solid, "r") as file:
@@ -40,11 +41,8 @@ class DashboardView:
         m1, m2, m3, m4, m5 = st.columns((1, 1, 1, 1, 1))
 
         with m1:
-            treino_data = self.dashboardUtils.load_treino_data()
-            data_selecionada = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
-            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(
-                data_selecionada)
-
+            self.data_selecionada_card_table = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
+            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(self.data_selecionada_card_table)
 
         with m2:
             st.markdown(f"""
@@ -91,17 +89,6 @@ class DashboardView:
                    </div>
                """, unsafe_allow_html=True)
 
-
-
-
-
-
-
-
-
-
-
-
         # Cria colunas para o grid de 2 gráficos
         col1, col2 = st.columns(2)
 
@@ -136,21 +123,14 @@ class DashboardView:
 
         with col2:
             st.subheader("Tabela de Exercícios por Categoria")
-            with st.expander("Tabela de Exercícios por Categoria"):
+            with st.expander("Exercícios"):
 
-                treino_data = self.dashboardUtils.load_treino_data()
 
-                data_selecionada = st.date_input(
-                    "Data",
-                    value=pd.to_datetime(treino_data["Data"].max()),
-                    key="data_exercicio"
-                )
-
-                tabela_categorias_dia = self.service.col4_exercícios_por_categoria(data_selecionada)
+                tabela_categorias_dia = self.service.col4_exercícios_por_categoria(self.data_selecionada_card_table)
 
                 # Exibir a tabela no Plotly se houver dados
                 if not tabela_categorias_dia.empty:
-                    st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
+                    #st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
 
                     fig = go.Figure(
                         data=[go.Table(
@@ -174,7 +154,7 @@ class DashboardView:
                     )
 
                     fig.update_layout(
-                        title_text="Exercícios por Categoria",
+                        title_text="",
                         title_font=dict(size=18, color='#264653'),
                         margin=dict(l=0, r=10, b=10, t=40),
                         height=500
@@ -191,7 +171,7 @@ class DashboardView:
 
         # Selecionar métrica para visualização
         metric_options = ["Calorias", "Duração", "Frequência Cardíaca Máxima", "Frequência Cardíaca Média"]
-        selected_metric = st.selectbox("Indicador:", metric_options)
+        selected_metric = st.selectbox("", metric_options)
 
         if selected_metric == "Calorias":
 
