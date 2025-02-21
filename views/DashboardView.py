@@ -20,6 +20,18 @@ class DashboardView:
 
         st.set_page_config(page_title='Dashboard - Treino', layout='wide')
 
+        # Streamlit - Interface
+        st.title("Bem vindo! 👋")
+
+
+        # st.sidebar.header("Olá, seja muito bem vindo!")
+        st.sidebar.header("Olá, Samilly Batista")
+        st.sidebar.write(f"Peso: 75 kg")
+        st.sidebar.write(f"Altura: 1.45 cm")
+        # st.sidebar.write(f"Data do treino: {data_treino.strftime('%d/%m/%Y %H:%M')}")
+
+
+
         treino_data = self.dashboardUtils.load_treino_data()
 
         img_heart_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-solid.svg")
