@@ -145,56 +145,34 @@ class DashboardService:
     def col4_exercícios_por_categoria(self, data_selecionada):
 
         set_data = self.loadFile.load_set_data()
-
-
         data_str = data_selecionada.strftime("%Y-%m-%d")  # Formatar a data para string
 
-        # Verificar se a data está no conjunto de dados
         if data_str not in set_data.get("schedule", {}):
             st.write(f"Data {data_str} não encontrada no cronograma.")
-            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
+            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhes"])
 
-        # Processar os exercícios do dia
         categorias_sets = []
         exercicios = set_data["schedule"][data_str].get("exercises", [])
+
         if not exercicios:
             st.write(f"Nenhum exercício encontrado para a data {data_str}.")
-            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhe 1", "Detalhe 2"])
+            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhes"])
 
-        # Iterar pelos exercícios
         for ex in exercicios:
             categoria = ex.get("category", "Desconhecida")
             sets = ex.get("sets", [])
+            detalhes = ex.get("details", "Sem detalhes")
 
-            if sets:  # Se houver sets, processa
-                if isinstance(sets[0], dict):  # Estrutura com dicionários
-                    for set_item in sets:
-                        exercicio = set_item.get('exercise', 'Sem exercício')
-                        detalhes = set_item.get('details', '').split(', ')
-                        detalhes_preenchidos = detalhes + [''] * (2 - len(detalhes))
-                        categorias_sets.append({
-                            "Categoria": categoria,
-                            "Exercício": exercicio,
-                            "Detalhe 1": detalhes_preenchidos[0],
-                            "Detalhe 2": detalhes_preenchidos[1]
-                        })
-                else:  # Estrutura com strings simples
-                    for exercicio in sets:
-                        categorias_sets.append({
-                            "Categoria": categoria,
-                            "Exercício": exercicio,
-                            "Detalhe 1": "",
-                            "Detalhe 2": ""
-                        })
-            else:  # Caso a lista de sets esteja vazia
+            # Garante que detalhes sejam sempre uma lista de strings
+            detalhes_list = detalhes.split(", ") if isinstance(detalhes, str) else ["Sem detalhes"]
+
+            for exercicio in sets:
                 categorias_sets.append({
                     "Categoria": categoria,
-                    "Exercício": "Sem exercício",
-                    "Detalhe 1": "",
-                    "Detalhe 2": ""
+                    "Exercício": exercicio,
+                    "Detalhes": " | ".join(detalhes_list)  # Junta detalhes separados por " | "
                 })
 
-        # Criar e retornar o DataFrame
         return pd.DataFrame(categorias_sets)
 
 

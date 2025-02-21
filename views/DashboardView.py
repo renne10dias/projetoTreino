@@ -134,29 +134,33 @@ class DashboardView:
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            st.subheader("Tabela de Exercícios por Categoria")
-            with st.expander("Exercícios"):
+            st.subheader("📌 Tabela de Exercícios por Categoria")
 
+            with st.expander("📋 Exercícios"):
 
+                # Carregar os dados da função de serviço
                 tabela_categorias_dia = self.service.col4_exercícios_por_categoria(self.data_selecionada_card_table)
 
-                # Exibir a tabela no Plotly se houver dados
                 if not tabela_categorias_dia.empty:
-                    #st.write(f"Exibindo dados para a data: {data_selecionada.strftime('%Y-%m-%d')}")
 
+                    # Criar figura do Plotly com tabela formatada
                     fig = go.Figure(
                         data=[go.Table(
-                            columnorder=[1, 2, 3, 4],
-                            columnwidth=[20, 30, 20, 20],  # Ajuste de largura das colunas
+                            columnorder=[1, 2, 3],
+                            columnwidth=[20, 50, 30],  # Ajuste das larguras das colunas
                             header=dict(
-                                values=list(tabela_categorias_dia.columns),
+                                values=["📌 Categoria", "🏋️ Exercício", "📋 Detalhes"],
                                 font=dict(size=14, color='white'),
                                 fill_color='#264653',
                                 align=['left', 'center'],
                                 height=30
                             ),
                             cells=dict(
-                                values=[tabela_categorias_dia[col].tolist() for col in tabela_categorias_dia.columns],
+                                values=[
+                                    tabela_categorias_dia["Categoria"].tolist(),
+                                    tabela_categorias_dia["Exercício"].tolist(),
+                                    tabela_categorias_dia["Detalhes"].tolist()
+                                ],
                                 font=dict(size=12, color='black'),
                                 fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
                                 align=['left', 'center'],
@@ -165,16 +169,21 @@ class DashboardView:
                         )]
                     )
 
+                    # Layout da tabela
                     fig.update_layout(
-                        title_text="",
+                        title_text="📊 Resumo dos Exercícios",
                         title_font=dict(size=18, color='#264653'),
                         margin=dict(l=0, r=10, b=10, t=40),
                         height=500
                     )
 
+                    # Exibir tabela
                     st.plotly_chart(fig, use_container_width=True)
+
                 else:
-                    st.write("Nenhum exercício encontrado para a data selecionada.")
+                    st.warning("⚠️ Nenhum exercício encontrado para a data selecionada.")
+
+
 
         st.subheader("Indicador")
 
