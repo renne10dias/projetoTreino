@@ -22,8 +22,8 @@ class DashboardService:
     def col1_intensidade_treino(self):
 
         # Obtendo os dados da classe Utils
-        self.json_data, self.df, self.meses_pt, self.selected_month_Intensity,  self.selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity("1")
-
+        self.json_data, self.df, self.meses_pt, self.selected_month_Intensity, self.selected_year_Intensity = self.dashboardUtils.selected_month_year_Intensity(
+            "1")
 
         # Adicionar dados de frequência cardíaca ao DataFrame
         heart_rate_data = [entry["heart_rate"]["average"] for entry in self.json_data]
@@ -67,8 +67,6 @@ class DashboardService:
         bio_data_full = self.loadFile.load_bio_data()
         set_data = self.loadFile.load_set_data()
 
-
-
         data_str = data_selecionada.strftime("%Y-%m-%d")
         numero_exercicios = 0
 
@@ -82,14 +80,9 @@ class DashboardService:
 
     def col3_indicador(self):
 
-
         # Carrega os dados
         bio_data_full = self.loadFile.load_bio_data()
         set_data = self.loadFile.load_set_data()
-
-
-
-
 
         # Criar bio_data_df
         bio_data_df = pd.DataFrame(bio_data_full)
@@ -100,7 +93,6 @@ class DashboardService:
             lambda x: x.get("maximum", 0) if isinstance(x, dict) else 0)
         bio_data_df["FC_Media"] = bio_data_df["heart_rate"].apply(
             lambda x: x.get("average", 0) if isinstance(x, dict) else 0)
-
 
         treino_data_df = pd.DataFrame(set_data["schedule"].values())
         treino_data_df["Data"] = pd.to_datetime(treino_data_df.index).date
@@ -127,20 +119,18 @@ class DashboardService:
         calorias_por_mes = treino_data_filtrado.groupby(["Data", "Exercício"], as_index=False).sum(
             numeric_only=True)
 
-
         # Converter a coluna "Data" para datetime, se ainda não estiver
         bio_data_df["Data"] = pd.to_datetime(bio_data_df["Data"], errors='coerce')
 
         # Filtrar os dados de bio_data_df com base no ano e mês selecionados
         bio_data_filtrado = bio_data_df[
             (bio_data_df["Data"].dt.year == self.selected_year_Intensity) &
-            (bio_data_df["Data"].dt.month == [k for k, v in self.meses_pt.items() if v == self.selected_month_Intensity][
-                0])
+            (bio_data_df["Data"].dt.month ==
+             [k for k, v in self.meses_pt.items() if v == self.selected_month_Intensity][
+                 0])
             ]
 
         return [bio_data_filtrado, self.selected_month_Intensity, calorias_por_mes]
-
-
 
     def col4_exercícios_por_categoria(self, data_selecionada):
 
@@ -174,6 +164,3 @@ class DashboardService:
                 })
 
         return pd.DataFrame(categorias_sets)
-
-
-

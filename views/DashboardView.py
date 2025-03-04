@@ -108,6 +108,7 @@ class DashboardView:
 
         with col1:
             st.subheader("Intensidade do Treino")
+
             # Obtendo os dados do serviço
             df_filtrado, color_map = self.service.col1_intensidade_treino()
 
@@ -116,16 +117,18 @@ class DashboardView:
                 st.warning("Nenhum dado disponível para o período selecionado.")
                 return
 
+            # Agrupar os dados por categoria e somar as médias
+            df_cumulativo = df_filtrado.groupby('cluster_category')['heart_rate_avg'].sum().reset_index()
+
             # Gráfico de barras
             fig = px.bar(
-                df_filtrado,
-                x='Data',
+                df_cumulativo,
+                x='cluster_category',
                 y='heart_rate_avg',
                 color='cluster_category',
                 color_discrete_map=color_map,
                 labels={
                     'heart_rate_avg': 'Frequência Cardíaca Média (bpm)',
-                    'Data': 'Data do Treino',
                     'cluster_category': 'Intensidade do Treino'
                 },
                 category_orders={"cluster_category": ["Alta Intensidade", "Intensidade Moderada", "Baixa Intensidade"]}
@@ -199,21 +202,20 @@ class DashboardView:
             # Criar um DataFrame para plotar todas as calorias queimadas
             calorias_por_mes = pd.DataFrame({
                 "Data": bio_data_filtrado["Data"],
-                "Calorias Queimadas": bio_data_filtrado["Calorias"]  # Supondo que a coluna se chama "Calorias"
+                "Calorias Queimadas": bio_data_filtrado["Calorias"]
             })
 
-            # Plotar gráfico
-            # Criar o gráfico de calorias queimadas
-            fig_calorias = px.line(
+            # Gráfico de dispersão
+            fig_calorias = px.scatter(
                 calorias_por_mes,
                 x="Data",
                 y="Calorias Queimadas",
-                markers=True,
                 title=f"Calorias Queimadas Mensais - {selected_month_Intensity}",
                 labels={"Data": "Data", "Calorias Queimadas": "Calorias"},
+                color="Calorias Queimadas",
+                color_continuous_scale="Viridis"
             )
 
-            # Atualizar o layout do gráfico
             fig_calorias.update_layout(
                 xaxis_title="Data",
                 yaxis_title="Calorias",
@@ -221,29 +223,24 @@ class DashboardView:
                 xaxis=dict(tickangle=45)
             )
 
-            # Exibir o gráfico no Streamlit
             st.plotly_chart(fig_calorias, use_container_width=True)
 
         elif selected_metric == "Duração":
-            # Criar um DataFrame para plotar todas as durações do treino
             duracoes_por_mes = pd.DataFrame({
                 "Data": bio_data_filtrado["Data"],
-                "Duração do Treino": bio_data_filtrado["Duração"]  # Supondo que a coluna se chama "Duração"
+                "Duração do Treino": bio_data_filtrado["Duração"]
             })
 
-            # Plotar gráfico
-            # Criar o gráfico de durações do treino
-            fig_duracao = px.line(
+            fig_duracao = px.scatter(
                 duracoes_por_mes,
                 x="Data",
                 y="Duração do Treino",
-                markers=True,
                 title=f"Durações do Treino Mensais - {selected_month_Intensity}",
                 labels={"Data": "Data", "Duração do Treino": "Duração (minutos)"},
-                line_shape='linear'  # Forma da linha (pode ser ajustada conforme necessário)
+                color="Duração do Treino",
+                color_continuous_scale="Viridis"
             )
 
-            # Atualizar o layout do gráfico
             fig_duracao.update_layout(
                 xaxis_title="Data",
                 yaxis_title="Duração (minutos)",
@@ -251,28 +248,24 @@ class DashboardView:
                 xaxis=dict(tickangle=45)
             )
 
-            # Exibir o gráfico no Streamlit
             st.plotly_chart(fig_duracao, use_container_width=True)
 
         elif selected_metric == "Frequência Cardíaca Máxima":
-            # Criar um DataFrame para plotar todas as frequências cardíacas
             frequencias_por_mes = pd.DataFrame({
                 "Data": bio_data_filtrado["Data"],
                 "Frequência Cardíaca": bio_data_filtrado["FC_Max"]
-                # Supondo que a coluna se chama "Frequência Cardíaca"
             })
 
-            # Criar o gráfico de frequências cardíacas
-            fig_frequencia = px.line(
+            fig_frequencia = px.scatter(
                 frequencias_por_mes,
                 x="Data",
                 y="Frequência Cardíaca",
-                markers=True,
                 title=f"Frequências Cardíacas Mensais - {selected_month_Intensity}",
                 labels={"Data": "Data", "Frequência Cardíaca": "Frequência Cardíaca (bpm)"},
+                color="Frequência Cardíaca",
+                color_continuous_scale="Viridis"
             )
 
-            # Atualizar o layout do gráfico
             fig_frequencia.update_layout(
                 xaxis_title="Data",
                 yaxis_title="Frequência Cardíaca (bpm)",
@@ -280,28 +273,24 @@ class DashboardView:
                 xaxis=dict(tickangle=45)
             )
 
-            # Exibir o gráfico no Streamlit
             st.plotly_chart(fig_frequencia, use_container_width=True)
 
         else:
-            # Criar um DataFrame para plotar todas as frequências cardíacas médias
             frequencias_media_por_mes = pd.DataFrame({
                 "Data": bio_data_filtrado["Data"],
                 "Frequência Cardíaca Média": bio_data_filtrado["FC_Media"]
-                # Supondo que a coluna se chama "FC_Media"
             })
 
-            # Criar o gráfico de frequências cardíacas médias
-            fig_frequencia_media = px.line(
+            fig_frequencia_media = px.scatter(
                 frequencias_media_por_mes,
                 x="Data",
                 y="Frequência Cardíaca Média",
-                markers=True,
                 title=f"Frequências Cardíacas Médias Mensais - {selected_month_Intensity}",
                 labels={"Data": "Data", "Frequência Cardíaca Média": "Frequência Cardíaca (bpm)"},
+                color="Frequência Cardíaca Média",
+                color_continuous_scale="Viridis"
             )
 
-            # Atualizar o layout do gráfico
             fig_frequencia_media.update_layout(
                 xaxis_title="Data",
                 yaxis_title="Frequência Cardíaca (bpm)",
@@ -309,5 +298,5 @@ class DashboardView:
                 xaxis=dict(tickangle=45)
             )
 
-            # Exibir o gráfico no Streamlit
             st.plotly_chart(fig_frequencia_media, use_container_width=True)
+
