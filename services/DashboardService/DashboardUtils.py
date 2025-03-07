@@ -45,7 +45,7 @@ class DashboardUtils:
 
 
     # BUSCAR AS CALORIAS POR DATA
-    def get_calories_by_date(self, bio_data, selected_date):
+    '''def get_calories_by_date(self, bio_data, selected_date):
         for entry in bio_data:
             if isinstance(entry, dict) and "start_time" in entry:
                 entry_date = datetime.strptime(entry["start_time"][:10], "%Y-%m-%d").date()
@@ -62,9 +62,48 @@ class DashboardUtils:
                     return (
                         entry["calories"], entry["heart_rate"]["average"], entry["heart_rate"]["maximum"],
                         duration_minutes)
+        return 0, 0, 0, 0'''
+
+    # BUSCAR AS CALORIAS POR DATA
+    def get_calories_by_date(self, bio_data, selected_date):
+        calories_list = []
+        heart_rate_avg_list = []
+        heart_rate_max_list = []
+        duration_list = []
+
+        for entry in bio_data:
+            if isinstance(entry, dict) and "start_time" in entry:
+                entry_date = datetime.strptime(entry["start_time"][:10], "%Y-%m-%d").date()
+                if entry_date == selected_date:
+                    duration = entry.get("duration", "")
+                    if duration.startswith("PT") and duration.endswith("S"):
+                        try:
+                            duration_seconds = float(duration[2:-1])
+                            duration_minutes = int(duration_seconds // 60)
+                        except ValueError:
+                            duration_minutes = 0
+                    else:
+                        duration_minutes = 0
+
+                    calories_list.append(entry["calories"])
+                    heart_rate_avg_list.append(entry["heart_rate"]["average"])
+                    heart_rate_max_list.append(entry["heart_rate"]["maximum"])
+                    duration_list.append(duration_minutes)
+
+        # Considerando apenas os últimos 5 treinos
+        calories_list = calories_list[-5:]
+        heart_rate_avg_list = heart_rate_avg_list[-5:]
+        heart_rate_max_list = heart_rate_max_list[-5:]
+        duration_list = duration_list[-5:]
+
+        if calories_list:
+            avg_calories = sum(calories_list) / len(calories_list)
+            avg_heart_rate_avg = sum(heart_rate_avg_list) / len(heart_rate_avg_list)
+            avg_heart_rate_max = sum(heart_rate_max_list) / len(heart_rate_max_list)
+            avg_duration = sum(duration_list) / len(duration_list)
+            return avg_calories, avg_heart_rate_avg, avg_heart_rate_max, avg_duration
+
         return 0, 0, 0, 0
-
-
 
     def load_dataset_formated(self):
 

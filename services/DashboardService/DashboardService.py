@@ -70,8 +70,7 @@ class DashboardService:
         data_str = data_selecionada.strftime("%Y-%m-%d")
         numero_exercicios = 0
 
-        calorias, frequencia_media, frequencia_maxima, duracao_diaria = self.dashboardUtils.get_calories_by_date(
-            bio_data_full, data_selecionada)
+        calorias, frequencia_media, frequencia_maxima, duracao_diaria = self.dashboardUtils.get_calories_by_date(bio_data_full, data_selecionada)
 
         if data_str in set_data["schedule"]:
             numero_exercicios = sum(len(exercise["sets"]) for exercise in set_data["schedule"][data_str]["exercises"])
