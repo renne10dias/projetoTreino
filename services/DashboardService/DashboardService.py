@@ -62,18 +62,22 @@ class DashboardService:
 
         return [df_filtrado, color_map]
 
-    def col2_resumo_diario(self, data_selecionada):
+    # Função ajustada para resumo diário sem data específica
+    def col2_resumo_diario(self):
         # Carrega os dados
-        bio_data_full = self.loadFile.load_bio_data()
-        set_data = self.loadFile.load_set_data()
+        bio_data_full = self.loadFile.load_bio_data()  # Supondo que retorna o JSON de bio_data
+        set_data = self.loadFile.load_set_data()  # Supondo que retorna o JSON de schedule
 
-        data_str = data_selecionada.strftime("%Y-%m-%d")
+        # Calcula as médias dos últimos 5 treinos e obtém os treinos
+        calorias, frequencia_media, frequencia_maxima, duracao_diaria, last_5_workouts = self.dashboardUtils.get_calories_last_5_workouts(bio_data_full)
+
+        # Calcula o número total de exercícios planejados para as datas dos últimos 5 treinos
         numero_exercicios = 0
-
-        calorias, frequencia_media, frequencia_maxima, duracao_diaria = self.dashboardUtils.get_calories_by_date(bio_data_full, data_selecionada)
-
-        if data_str in set_data["schedule"]:
-            numero_exercicios = sum(len(exercise["sets"]) for exercise in set_data["schedule"][data_str]["exercises"])
+        for workout in last_5_workouts:
+            workout_date_str = workout["date"].strftime("%Y-%m-%d")  # Converte a data do treino para string
+            if workout_date_str in set_data["schedule"]:
+                numero_exercicios += sum(
+                    len(exercise["sets"]) for exercise in set_data["schedule"][workout_date_str]["exercises"])
 
         return [calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios]
 
@@ -131,35 +135,31 @@ class DashboardService:
 
         return [bio_data_filtrado, self.selected_month_Intensity, calorias_por_mes]
 
-    def col4_exercícios_por_categoria(self, data_selecionada):
+    def col4_exercícios_por_categoria(self):
+        bio_data_full = self.loadFile.load_bio_data()  # Supondo que retorna o JSON de bio_data
+        set_data = self.loadFile.load_set_data()  # Supondo que retorna o JSON de schedule
 
-        set_data = self.loadFile.load_set_data()
-        data_str = data_selecionada.strftime("%Y-%m-%d")  # Formatar a data para string
+        # Calcula as médias dos últimos 5 treinos e obtém os treinos
+        calorias, frequencia_media, frequencia_maxima, duracao_diaria, last_5_workouts = self.dashboardUtils.get_calories_last_5_workouts(bio_data_full)
 
-        if data_str not in set_data.get("schedule", {}):
-            st.write(f"Data {data_str} não encontrada no cronograma.")
-            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhes"])
+        # Lista para armazenar os dados de data e tipo
+        data_tipo = []
 
-        categorias_sets = []
-        exercicios = set_data["schedule"][data_str].get("exercises", [])
+        # Itera sobre os últimos 5 treinos
+        for workout in last_5_workouts:
+            workout_date_str = workout["date"].strftime("%Y-%m-%d")  # Converte a data do treino para string
+            tipo_treino = "Não agendado"  # Valor padrão se não houver agendamento
+            if workout_date_str in set_data["schedule"]:
+                tipo_treino = set_data["schedule"][workout_date_str].get("type", "Desconhecido")
 
-        if not exercicios:
-            st.write(f"Nenhum exercício encontrado para a data {data_str}.")
-            return pd.DataFrame(columns=["Categoria", "Exercício", "Detalhes"])
+            # Adiciona a data e o tipo à lista
+            data_tipo.append({
+                "Data": workout_date_str,
+                "Tipo": tipo_treino
+            })
 
-        for ex in exercicios:
-            categoria = ex.get("category", "Desconhecida")
-            sets = ex.get("sets", [])
-            detalhes = ex.get("details", "Sem detalhes")
-
-            # Garante que detalhes sejam sempre uma lista de strings
-            detalhes_list = detalhes.split(", ") if isinstance(detalhes, str) else ["Sem detalhes"]
-
-            for exercicio in sets:
-                categorias_sets.append({
-                    "Categoria": categoria,
-                    "Exercício": exercicio,
-                    "Detalhes": " | ".join(detalhes_list)  # Junta detalhes separados por " | "
-                })
-
-        return pd.DataFrame(categorias_sets)
+        # Retorna um DataFrame com os dados, ou vazio se não houver treinos
+        if data_tipo:
+            return pd.DataFrame(data_tipo)
+        else:
+            return pd.DataFrame(columns=["Data", "Tipo"])

@@ -20,9 +20,6 @@ class DashboardView:
 
         st.set_page_config(page_title='Dashboard - Treino', layout='wide')
 
-        # Streamlit - Interface
-        st.title("Bem vindo! 👋")
-
 
         # st.sidebar.header("Olá, seja muito bem vindo!")
         st.sidebar.header("Olá, Samilly Batista")
@@ -53,8 +50,7 @@ class DashboardView:
         m1, m2, m3, m4, m5 = st.columns((1, 1, 1, 1, 1))
 
         with m1:
-            self.data_selecionada_card_table = st.date_input("Data", value=pd.to_datetime(treino_data["Data"].max()))
-            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario(self.data_selecionada_card_table)
+            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario()
 
         with m2:
             st.markdown(f"""
@@ -137,166 +133,168 @@ class DashboardView:
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            st.subheader("📌 Tabela de Exercícios por Categoria")
 
-            with st.expander("📋 Exercícios"):
+            st.subheader("Indicador")
 
-                # Carregar os dados da função de serviço
-                tabela_categorias_dia = self.service.col4_exercícios_por_categoria(self.data_selecionada_card_table)
+            # Obtendo os dados da classe Utils
+            bio_data_filtrado, selected_month_Intensity, calorias_por_mes = self.service.col3_indicador()
 
-                if not tabela_categorias_dia.empty:
+            # Selecionar métrica para visualização
+            metric_options = ["Calorias", "Duração", "Frequência Cardíaca Máxima", "Frequência Cardíaca Média"]
+            selected_metric = st.selectbox("", metric_options)
 
-                    # Criar figura do Plotly com tabela formatada
-                    fig = go.Figure(
-                        data=[go.Table(
-                            columnorder=[1, 2, 3],
-                            columnwidth=[20, 50, 30],  # Ajuste das larguras das colunas
-                            header=dict(
-                                values=["📌 Categoria", "🏋️ Exercício", "📋 Detalhes"],
-                                font=dict(size=14, color='white'),
-                                fill_color='#264653',
-                                align=['left', 'center'],
-                                height=30
-                            ),
-                            cells=dict(
-                                values=[
-                                    tabela_categorias_dia["Categoria"].tolist(),
-                                    tabela_categorias_dia["Exercício"].tolist(),
-                                    tabela_categorias_dia["Detalhes"].tolist()
-                                ],
-                                font=dict(size=12, color='black'),
-                                fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
-                                align=['left', 'center'],
-                                height=25
-                            )
-                        )]
-                    )
+            if selected_metric == "Calorias":
 
-                    # Layout da tabela
-                    fig.update_layout(
-                        title_text="📊 Resumo dos Exercícios",
-                        title_font=dict(size=18, color='#264653'),
-                        margin=dict(l=0, r=10, b=10, t=40),
-                        height=500
-                    )
+                # Criar um DataFrame para plotar todas as calorias queimadas
+                calorias_por_mes = pd.DataFrame({
+                    "Data": bio_data_filtrado["Data"],
+                    "Calorias Queimadas": bio_data_filtrado["Calorias"]
+                })
 
-                    # Exibir tabela
-                    st.plotly_chart(fig, use_container_width=True)
+                # Gráfico de dispersão
+                fig_calorias = px.scatter(
+                    calorias_por_mes,
+                    x="Data",
+                    y="Calorias Queimadas",
+                    title=f"Calorias Queimadas Mensais - {selected_month_Intensity}",
+                    labels={"Data": "Data", "Calorias Queimadas": "Calorias"},
+                    color="Calorias Queimadas",
+                    color_continuous_scale="Viridis"
+                )
 
-                else:
-                    st.warning("⚠️ Nenhum exercício encontrado para a data selecionada.")
+                fig_calorias.update_layout(
+                    xaxis_title="Data",
+                    yaxis_title="Calorias",
+                    template="plotly_dark",
+                    xaxis=dict(tickangle=45)
+                )
+
+                st.plotly_chart(fig_calorias, use_container_width=True)
+
+            elif selected_metric == "Duração":
+                duracoes_por_mes = pd.DataFrame({
+                    "Data": bio_data_filtrado["Data"],
+                    "Duração do Treino": bio_data_filtrado["Duração"]
+                })
+
+                fig_duracao = px.scatter(
+                    duracoes_por_mes,
+                    x="Data",
+                    y="Duração do Treino",
+                    title=f"Durações do Treino Mensais - {selected_month_Intensity}",
+                    labels={"Data": "Data", "Duração do Treino": "Duração (minutos)"},
+                    color="Duração do Treino",
+                    color_continuous_scale="Viridis"
+                )
+
+                fig_duracao.update_layout(
+                    xaxis_title="Data",
+                    yaxis_title="Duração (minutos)",
+                    template="plotly_dark",
+                    xaxis=dict(tickangle=45)
+                )
+
+                st.plotly_chart(fig_duracao, use_container_width=True)
+
+            elif selected_metric == "Frequência Cardíaca Máxima":
+                frequencias_por_mes = pd.DataFrame({
+                    "Data": bio_data_filtrado["Data"],
+                    "Frequência Cardíaca": bio_data_filtrado["FC_Max"]
+                })
+
+                fig_frequencia = px.scatter(
+                    frequencias_por_mes,
+                    x="Data",
+                    y="Frequência Cardíaca",
+                    title=f"Frequências Cardíacas Mensais - {selected_month_Intensity}",
+                    labels={"Data": "Data", "Frequência Cardíaca": "Frequência Cardíaca (bpm)"},
+                    color="Frequência Cardíaca",
+                    color_continuous_scale="Viridis"
+                )
+
+                fig_frequencia.update_layout(
+                    xaxis_title="Data",
+                    yaxis_title="Frequência Cardíaca (bpm)",
+                    template="plotly_dark",
+                    xaxis=dict(tickangle=45)
+                )
+
+                st.plotly_chart(fig_frequencia, use_container_width=True)
+
+            else:
+                frequencias_media_por_mes = pd.DataFrame({
+                    "Data": bio_data_filtrado["Data"],
+                    "Frequência Cardíaca Média": bio_data_filtrado["FC_Media"]
+                })
+
+                fig_frequencia_media = px.scatter(
+                    frequencias_media_por_mes,
+                    x="Data",
+                    y="Frequência Cardíaca Média",
+                    title=f"Frequências Cardíacas Médias Mensais - {selected_month_Intensity}",
+                    labels={"Data": "Data", "Frequência Cardíaca Média": "Frequência Cardíaca (bpm)"},
+                    color="Frequência Cardíaca Média",
+                    color_continuous_scale="Viridis"
+                )
+
+                fig_frequencia_media.update_layout(
+                    xaxis_title="Data",
+                    yaxis_title="Frequência Cardíaca (bpm)",
+                    template="plotly_dark",
+                    xaxis=dict(tickangle=45)
+                )
+
+                st.plotly_chart(fig_frequencia_media, use_container_width=True)
 
 
 
-        st.subheader("Indicador")
 
-        # Obtendo os dados da classe Utils
-        bio_data_filtrado, selected_month_Intensity, calorias_por_mes = self.service.col3_indicador()
+        st.subheader("📌 Tabela de Treinos Recentes")
 
-        # Selecionar métrica para visualização
-        metric_options = ["Calorias", "Duração", "Frequência Cardíaca Máxima", "Frequência Cardíaca Média"]
-        selected_metric = st.selectbox("", metric_options)
+        with st.expander("📋 Últimos 5 Treinos"):
+            # Carregar os dados da função de serviço
+            tabela_categorias_dia = self.service.col4_exercícios_por_categoria()
 
-        if selected_metric == "Calorias":
+            if not tabela_categorias_dia.empty:
+                # Criar figura do Plotly com tabela formatada
+                fig = go.Figure(
+                    data=[go.Table(
+                        columnorder=[1, 2],
+                        columnwidth=[20, 50],  # Ajuste das larguras das colunas
+                        header=dict(
+                            values=["📅 Data", "🏋️ Tipo"],
+                            font=dict(size=14, color='white'),
+                            fill_color='#264653',
+                            align=['left', 'center'],
+                            height=30
+                        ),
+                        cells=dict(
+                            values=[
+                                tabela_categorias_dia["Data"].tolist(),
+                                tabela_categorias_dia["Tipo"].tolist()
+                            ],
+                            font=dict(size=12, color='black'),
+                            fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
+                            align=['left', 'center'],
+                            height=25
+                        )
+                    )]
+                )
 
-            # Criar um DataFrame para plotar todas as calorias queimadas
-            calorias_por_mes = pd.DataFrame({
-                "Data": bio_data_filtrado["Data"],
-                "Calorias Queimadas": bio_data_filtrado["Calorias"]
-            })
+                # Layout da tabela
+                fig.update_layout(
+                    title_text="📊 Resumo dos Últimos 5 Treinos",
+                    title_font=dict(size=18, color='#264653'),
+                    margin=dict(l=0, r=10, b=10, t=40),
+                    height=300  # Ajustei a altura para uma tabela menor
+                )
 
-            # Gráfico de dispersão
-            fig_calorias = px.scatter(
-                calorias_por_mes,
-                x="Data",
-                y="Calorias Queimadas",
-                title=f"Calorias Queimadas Mensais - {selected_month_Intensity}",
-                labels={"Data": "Data", "Calorias Queimadas": "Calorias"},
-                color="Calorias Queimadas",
-                color_continuous_scale="Viridis"
-            )
+                # Exibir tabela
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("⚠️ Nenhum treino encontrado para os últimos 5 registros.")
 
-            fig_calorias.update_layout(
-                xaxis_title="Data",
-                yaxis_title="Calorias",
-                template="plotly_dark",
-                xaxis=dict(tickangle=45)
-            )
 
-            st.plotly_chart(fig_calorias, use_container_width=True)
 
-        elif selected_metric == "Duração":
-            duracoes_por_mes = pd.DataFrame({
-                "Data": bio_data_filtrado["Data"],
-                "Duração do Treino": bio_data_filtrado["Duração"]
-            })
 
-            fig_duracao = px.scatter(
-                duracoes_por_mes,
-                x="Data",
-                y="Duração do Treino",
-                title=f"Durações do Treino Mensais - {selected_month_Intensity}",
-                labels={"Data": "Data", "Duração do Treino": "Duração (minutos)"},
-                color="Duração do Treino",
-                color_continuous_scale="Viridis"
-            )
-
-            fig_duracao.update_layout(
-                xaxis_title="Data",
-                yaxis_title="Duração (minutos)",
-                template="plotly_dark",
-                xaxis=dict(tickangle=45)
-            )
-
-            st.plotly_chart(fig_duracao, use_container_width=True)
-
-        elif selected_metric == "Frequência Cardíaca Máxima":
-            frequencias_por_mes = pd.DataFrame({
-                "Data": bio_data_filtrado["Data"],
-                "Frequência Cardíaca": bio_data_filtrado["FC_Max"]
-            })
-
-            fig_frequencia = px.scatter(
-                frequencias_por_mes,
-                x="Data",
-                y="Frequência Cardíaca",
-                title=f"Frequências Cardíacas Mensais - {selected_month_Intensity}",
-                labels={"Data": "Data", "Frequência Cardíaca": "Frequência Cardíaca (bpm)"},
-                color="Frequência Cardíaca",
-                color_continuous_scale="Viridis"
-            )
-
-            fig_frequencia.update_layout(
-                xaxis_title="Data",
-                yaxis_title="Frequência Cardíaca (bpm)",
-                template="plotly_dark",
-                xaxis=dict(tickangle=45)
-            )
-
-            st.plotly_chart(fig_frequencia, use_container_width=True)
-
-        else:
-            frequencias_media_por_mes = pd.DataFrame({
-                "Data": bio_data_filtrado["Data"],
-                "Frequência Cardíaca Média": bio_data_filtrado["FC_Media"]
-            })
-
-            fig_frequencia_media = px.scatter(
-                frequencias_media_por_mes,
-                x="Data",
-                y="Frequência Cardíaca Média",
-                title=f"Frequências Cardíacas Médias Mensais - {selected_month_Intensity}",
-                labels={"Data": "Data", "Frequência Cardíaca Média": "Frequência Cardíaca (bpm)"},
-                color="Frequência Cardíaca Média",
-                color_continuous_scale="Viridis"
-            )
-
-            fig_frequencia_media.update_layout(
-                xaxis_title="Data",
-                yaxis_title="Frequência Cardíaca (bpm)",
-                template="plotly_dark",
-                xaxis=dict(tickangle=45)
-            )
-
-            st.plotly_chart(fig_frequencia_media, use_container_width=True)
 
