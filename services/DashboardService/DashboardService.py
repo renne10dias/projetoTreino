@@ -81,6 +81,9 @@ class DashboardService:
 
         return [calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios]
 
+    import pandas as pd
+    from sklearn.cluster import KMeans
+
     def col3_indicador(self):
 
         # Carrega os dados
@@ -128,12 +131,38 @@ class DashboardService:
         # Filtrar os dados de bio_data_df com base no ano e mês selecionados
         bio_data_filtrado = bio_data_df[
             (bio_data_df["Data"].dt.year == self.selected_year_Intensity) &
-            (bio_data_df["Data"].dt.month ==
-             [k for k, v in self.meses_pt.items() if v == self.selected_month_Intensity][
-                 0])
+            (bio_data_df["Data"].dt.month == mes_selecionado)
             ]
 
-        return [bio_data_filtrado, self.selected_month_Intensity, calorias_por_mes]
+        # Aplicar K-means para classificar a intensidade do treino
+        X = bio_data_filtrado[['FC_Media', 'Calorias']].dropna()
+
+        if len(X) >= 3:
+            kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+            bio_data_filtrado['cluster'] = kmeans.fit_predict(X)
+
+            # Calcular a média de calorias e FC_Media por cluster
+            cluster_means = bio_data_filtrado.groupby('cluster')[['FC_Media', 'Calorias']].mean()
+
+            # Ordenar clusters pelo gasto calórico e atribuir rótulos
+            sorted_clusters = cluster_means.sort_values(by='Calorias')
+            cluster_labels = {
+                sorted_clusters.index[0]: 'Baixa Intensidade',
+                sorted_clusters.index[1]: 'Intensidade Moderada',
+                sorted_clusters.index[2]: 'Alta Intensidade'
+            }
+            bio_data_filtrado['cluster_category'] = bio_data_filtrado['cluster'].map(cluster_labels)
+        else:
+            bio_data_filtrado['cluster_category'] = 'Baixa Intensidade'  # Default caso não haja dados suficientes
+
+        # Criar dicionário de cores igual ao da função `col1_intensidade_treino`
+        color_map = {
+            'Baixa Intensidade': 'green',
+            'Intensidade Moderada': 'blue',
+            'Alta Intensidade': 'red'
+        }
+
+        return [bio_data_filtrado, self.selected_month_Intensity, calorias_por_mes, color_map]
 
     def col4_exercícios_por_categoria(self):
         bio_data_full = self.loadFile.load_bio_data()  # Supondo que retorna o JSON de bio_data

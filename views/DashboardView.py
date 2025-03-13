@@ -137,114 +137,93 @@ class DashboardView:
             st.subheader("Indicador")
 
             # Obtendo os dados da classe Utils
-            bio_data_filtrado, selected_month_Intensity, calorias_por_mes = self.service.col3_indicador()
+            bio_data_filtrado, selected_month_Intensity, calorias_por_mes, color_map = self.service.col3_indicador()
 
             # Selecionar métrica para visualização
             metric_options = ["Calorias", "Duração", "Frequência Cardíaca Máxima", "Frequência Cardíaca Média"]
             selected_metric = st.selectbox("", metric_options)
 
-            if selected_metric == "Calorias":
+            # Definir cores com base na intensidade do treino
+            bio_data_filtrado["cluster_category"] = bio_data_filtrado["cluster_category"].astype(str)
 
-                # Criar um DataFrame para plotar todas as calorias queimadas
-                calorias_por_mes = pd.DataFrame({
+            # Criar dicionário de cores a partir da função anterior
+            category_colors = color_map
+
+            if selected_metric == "Calorias":
+                df_plot = pd.DataFrame({
                     "Data": bio_data_filtrado["Data"],
-                    "Calorias Queimadas": bio_data_filtrado["Calorias"]
+                    "Calorias Queimadas": bio_data_filtrado["Calorias"],
+                    "Intensidade": bio_data_filtrado["cluster_category"]
                 })
 
-                # Gráfico de dispersão
                 fig_calorias = px.scatter(
-                    calorias_por_mes,
+                    df_plot,
                     x="Data",
                     y="Calorias Queimadas",
                     title=f"Calorias Queimadas Mensais - {selected_month_Intensity}",
                     labels={"Data": "Data", "Calorias Queimadas": "Calorias"},
-                    color="Calorias Queimadas",
-                    color_continuous_scale="Viridis"
+                    color="Intensidade",
+                    color_discrete_map=category_colors
                 )
-
-                fig_calorias.update_layout(
-                    xaxis_title="Data",
-                    yaxis_title="Calorias",
-                    template="plotly_dark",
-                    xaxis=dict(tickangle=45)
-                )
-
-                st.plotly_chart(fig_calorias, use_container_width=True)
 
             elif selected_metric == "Duração":
-                duracoes_por_mes = pd.DataFrame({
+                df_plot = pd.DataFrame({
                     "Data": bio_data_filtrado["Data"],
-                    "Duração do Treino": bio_data_filtrado["Duração"]
+                    "Duração do Treino": bio_data_filtrado["Duração"],
+                    "Intensidade": bio_data_filtrado["cluster_category"]
                 })
 
-                fig_duracao = px.scatter(
-                    duracoes_por_mes,
+                fig_calorias = px.scatter(
+                    df_plot,
                     x="Data",
                     y="Duração do Treino",
                     title=f"Durações do Treino Mensais - {selected_month_Intensity}",
                     labels={"Data": "Data", "Duração do Treino": "Duração (minutos)"},
-                    color="Duração do Treino",
-                    color_continuous_scale="Viridis"
+                    color="Intensidade",
+                    color_discrete_map=category_colors
                 )
-
-                fig_duracao.update_layout(
-                    xaxis_title="Data",
-                    yaxis_title="Duração (minutos)",
-                    template="plotly_dark",
-                    xaxis=dict(tickangle=45)
-                )
-
-                st.plotly_chart(fig_duracao, use_container_width=True)
 
             elif selected_metric == "Frequência Cardíaca Máxima":
-                frequencias_por_mes = pd.DataFrame({
+                df_plot = pd.DataFrame({
                     "Data": bio_data_filtrado["Data"],
-                    "Frequência Cardíaca": bio_data_filtrado["FC_Max"]
+                    "Frequência Cardíaca": bio_data_filtrado["FC_Max"],
+                    "Intensidade": bio_data_filtrado["cluster_category"]
                 })
 
-                fig_frequencia = px.scatter(
-                    frequencias_por_mes,
+                fig_calorias = px.scatter(
+                    df_plot,
                     x="Data",
                     y="Frequência Cardíaca",
-                    title=f"Frequências Cardíacas Mensais - {selected_month_Intensity}",
+                    title=f"Frequências Cardíacas Máximas - {selected_month_Intensity}",
                     labels={"Data": "Data", "Frequência Cardíaca": "Frequência Cardíaca (bpm)"},
-                    color="Frequência Cardíaca",
-                    color_continuous_scale="Viridis"
+                    color="Intensidade",
+                    color_discrete_map=category_colors
                 )
 
-                fig_frequencia.update_layout(
-                    xaxis_title="Data",
-                    yaxis_title="Frequência Cardíaca (bpm)",
-                    template="plotly_dark",
-                    xaxis=dict(tickangle=45)
-                )
-
-                st.plotly_chart(fig_frequencia, use_container_width=True)
-
-            else:
-                frequencias_media_por_mes = pd.DataFrame({
+            else:  # Frequência Cardíaca Média
+                df_plot = pd.DataFrame({
                     "Data": bio_data_filtrado["Data"],
-                    "Frequência Cardíaca Média": bio_data_filtrado["FC_Media"]
+                    "Frequência Cardíaca Média": bio_data_filtrado["FC_Media"],
+                    "Intensidade": bio_data_filtrado["cluster_category"]
                 })
 
-                fig_frequencia_media = px.scatter(
-                    frequencias_media_por_mes,
+                fig_calorias = px.scatter(
+                    df_plot,
                     x="Data",
                     y="Frequência Cardíaca Média",
-                    title=f"Frequências Cardíacas Médias Mensais - {selected_month_Intensity}",
+                    title=f"Frequências Cardíacas Médias - {selected_month_Intensity}",
                     labels={"Data": "Data", "Frequência Cardíaca Média": "Frequência Cardíaca (bpm)"},
-                    color="Frequência Cardíaca Média",
-                    color_continuous_scale="Viridis"
+                    color="Intensidade",
+                    color_discrete_map=category_colors
                 )
 
-                fig_frequencia_media.update_layout(
-                    xaxis_title="Data",
-                    yaxis_title="Frequência Cardíaca (bpm)",
-                    template="plotly_dark",
-                    xaxis=dict(tickangle=45)
-                )
+            fig_calorias.update_layout(
+                xaxis_title="Data",
+                template="plotly_dark",
+                xaxis=dict(tickangle=45)
+            )
 
-                st.plotly_chart(fig_frequencia_media, use_container_width=True)
+            st.plotly_chart(fig_calorias, use_container_width=True)
 
 
 
