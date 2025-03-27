@@ -46,28 +46,33 @@ class DashboardView:
         with open(img_fire_solid, "r") as file:
             svg_fire_solid = file.read()
 
+        calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario()
+
+        st.markdown(
+            "<h2 style='text-align: left;'>Últimos 5 Treinos</h2>",
+            unsafe_allow_html=True
+        )
+
         # Criando as métricas em colunas
         m1, m2, m3, m4, m5 = st.columns((1, 1, 1, 1, 1))
 
         with m1:
-            calorias, frequencia_media, frequencia_maxima, duracao_diaria, numero_exercicios = self.service.col2_resumo_diario()
+            st.markdown(f"""
+                        <div style="text-align: center;">
+                            <h4>Freq. Cardíaca Média</h4>
+                            <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 100%; height: 100%; color: red; fill: red;">
+                                        {svg_heart_solid}
+                                    </div>
+                                </span>
+                                {frequencia_media} bpm
+                            </h2>
+                        </div>
+                    """, unsafe_allow_html=True)
+
 
         with m2:
-            st.markdown(f"""
-                    <div style="text-align: center;">
-                        <h4>Freq. Cardíaca Média</h4>
-                        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                            <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <div style="width: 100%; height: 100%; color: red; fill: red;">
-                                    {svg_heart_solid}
-                                </div>
-                            </span>
-                            {frequencia_media} bpm
-                        </h2>
-                    </div>
-                """, unsafe_allow_html=True)
-
-        with m3:
             st.markdown(f"""
                     <div style="text-align: center;">
                         <h4>Freq.Cardíaca Máxima</h4>
@@ -82,20 +87,24 @@ class DashboardView:
                     </div>
                 """, unsafe_allow_html=True)
 
-        with m4:
+
+        with m3:
             st.markdown(f"""
-                   <div style="text-align: center;">
-                       <h4>Calorias Perdidas</h4>
-                       <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                           <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                               <div style="width: 100%; height: 100%; color: red; fill: red;">
-                                   {svg_fire_solid}
-                               </div>
-                           </span>
-                           {calorias}
-                       </h2>
-                   </div>
-               """, unsafe_allow_html=True)
+                       <div style="text-align: center;">
+                           <h4>Calorias Perdidas</h4>
+                           <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                               <span style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                   <div style="width: 100%; height: 100%; color: red; fill: red;">
+                                       {svg_fire_solid}
+                                   </div>
+                               </span>
+                               {calorias}
+                           </h2>
+                       </div>
+                   """, unsafe_allow_html=True)
+
+
+
 
         # Cria colunas para o grid de 2 gráficos
         col1, col2 = st.columns(2)
@@ -103,7 +112,10 @@ class DashboardView:
         """Cria o gráfico de intensidade do treino e exibe no Streamlit."""
 
         with col1:
-            st.subheader("Intensidade do Treino")
+            st.markdown(
+                "<br><h2 style='text-align: left;'>Intensidade do Treino</h2>",
+                unsafe_allow_html=True
+            )
 
             # Obtendo os dados do serviço
             df_filtrado, color_map = self.service.col1_intensidade_treino()
@@ -133,8 +145,10 @@ class DashboardView:
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-
-            st.subheader("Indicador")
+            st.markdown(
+                "<br><h2 style='text-align: left;'>Indicador</h2>",
+                unsafe_allow_html=True
+            )
 
             # Obtendo os dados da classe Utils
             bio_data_filtrado, selected_month_Intensity, calorias_por_mes, color_map = self.service.col3_indicador()
@@ -272,6 +286,68 @@ class DashboardView:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("⚠️ Nenhum treino encontrado para os últimos 5 registros.")
+
+
+
+
+        st.markdown(
+            "<br><h2 style='text-align: left;'>Diário de treino</h2>",
+            unsafe_allow_html=True
+        )
+
+        with st.expander("📋 Lista os treinos"):
+            tabela_categorias_dia = self.service.listar_exercicio_por_data()
+            if tabela_categorias_dia is not None and not tabela_categorias_dia.empty:
+                fig = go.Figure(
+                    data=[go.Table(
+                        columnorder=[1, 2],
+                        columnwidth=[20, 50],
+                        header=dict(
+                            values=["<b>📅 Data</b>", "<b>🏋️ Tipo</b>"],
+                            font=dict(size=14, color='white'),
+                            fill_color='#264653',
+                            align=['left', 'center'],
+                            height=30
+                        ),
+                        cells=dict(
+                            values=[
+                                tabela_categorias_dia["Data"].tolist(),
+                                tabela_categorias_dia["Categoria"].tolist()
+                            ],
+                            font=dict(size=12, color='black'),
+                            fill_color=[
+                                ['#F6F6F6' if i % 2 == 0 else '#E8E8E8' for i in
+                                 range(len(tabela_categorias_dia))]
+                            ],
+                            align=['left', 'center'],
+                            height=25
+                        )
+                    )]
+                )
+
+                fig.update_layout(
+                    title_text="📊 Resumo dos Treinos do Dia",
+                    title_font=dict(size=18, color='#264653'),
+                    margin=dict(l=20, r=20, b=20, t=50),
+                    height=300
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("Nenhum treino encontrado para o dia selecionado.")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

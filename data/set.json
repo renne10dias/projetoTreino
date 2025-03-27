@@ -738,39 +738,173 @@
                "sets": ["Elevação Pélvica com abdução de Quadril usando Elástico"],
               "details": "3 séries, 20 repetições, 45s descanso"
             }
+
         ,
         {
           "category": "Posterior de Coxa",
            "details": "3 séries, 15-12-10 repetições, 45s descanso",
           "sets": ["Cadeira abdutora 90°"]
         },
-        { "category": "Glúteos",
-          "sets": ["Elevação pélvica na máquina"],
-          "details": "3 séries, 15-12-10 repetições, 45s descanso"
-        },
-        {
-          "category": "Posterior de Coxa",
-          "sets": [ "Mesa flexora"],
-          "details": "3 séries, 15-12-10 repetições, 45s descanso"
-        },
-        {
-          "category": "Posterior de Coxa",
-          "sets":["Cadeira flexora"],
-          "details": "3 séries, 15-12-10 repetições, 45s descanso"
-        },
+            { "category": "Glúteos",
+              "sets": ["Elevação pélvica na máquina"],
+              "details": "3 séries, 15-12-10 repetições, 45s descanso"
+            },
+            {
+              "category": "Posterior de Coxa",
+              "sets": [ "Mesa flexora"],
+              "details": "3 séries, 15-12-10 repetições, 45s descanso"
+            },
+            {
+              "category": "Posterior de Coxa",
+              "sets":["Cadeira flexora"],
+              "details": "3 séries, 15-12-10 repetições, 45s descanso"
+            },
         {
           "category": "Panturrilha",
           "details": "3 séries, 20 repetições, 45s descanso",
           "sets": ["Panturrilha em pé na máquina"]
         },
             {
-              "category": "Panturrilha",
+               "category": "Panturrilha",
               "sets": [ "Panturrilha no leg press"],
               "details": "3 séries, 20 repetições, 45s descanso"
             }
           ]
+        },
+      "2025-03-05": {
+      "type": "Treino de Glúteos, Quadríceps, Posterior de Coxa e Panturrilha",
+      "exercises": [
+        
+          
+            {
+              "category": "Glúteos e Quadríceps",
+              "sets": ["Flexão de quadril no solo com elástico"],
+              "details": "3 séries, 10 repetições, 45s descanso"
+              
+            },
+            {
+              "category": "Glúteos e Quadríceps",
+              "sets": ["Passo Lateral com Elástico na Coxa"],
+              "details": "3 séries, 30 repetições, 45s descanso"
+            },
+            {
+              "category": "Glúteos e Quadríceps",
+              "sets": ["Extensão de Quadril em Diagonal com Elástico na Perna"],
+              "details": "3 séries, 20 repetições, 45s descanso"
+            },
+            {
+              "category": "Quadríceps e Posterior de Coxa",
+              "sets": ["Cadeira adutora"],
+              "details": "3 séries, 10 repetições, 45s descanso"
+             
+            },
+            { 
+              "category": "Quadríceps e Posterior de Coxa",
+              "sets": ["Cadeira extensora"],
+              "details": "3 séries, 10 repetições, 45s descanso"
+            },
+            {
+              "category": "Quadríceps e Posterior de Coxa",
+              "sets": ["Leg press 45° ângulo de proteção"],              
+              "details": "3 séries, 10 repetições, 45s descanso"
+            },
+            {
+              "category": "Quadríceps e Posterior de Coxa",
+              "sets": ["Agachamento com Elástico"],              
+              "details": "3 séries, 20 repetições, 45s descanso"
+            },
+            {
+              "category": "Panturrilha",
+              "sets": ["Panturrilha em pé na máquina"],
+              "details": "3 séries, 20 repetições, 20s descanso"
+            }
+          ]  
+      
+    },
+    "2025-03-06":
+    {
+      "type": "Treino Cardio",
+      "exercises": [
+        {
+          "category": "Cardio",
+          "details": "15 minutos, ritmo moderado",
+          "sets": [ "Esteira"]
+             
+        },
+            {"category": "Cardio",
+              "sets": [ "Bicicleta"],
+              "details": "20 minutos, intensidade média"
+            }
+      ]
+    },
+    "2025-03-08":
+    {
+      "type": "Treino de Glúteos, Posterior de Coxa e Panturrilha",
+      "exercises": [
+        {
+          "category": "Glúteos",
+          "details": "3 séries, 30 repetições, 45s descanso",
+          "sets": ["Ostra com elástico"]
+
+          },
+            { "category": "Glúteos",
+               "sets": ["Elevação Pélvica com abdução de Quadril usando Elástico"],
+              "details": "3 séries, 20 repetições, 45s descanso"
+            }
+
+        ,
+        {
+          "category": "Posterior de Coxa",
+           "details": "3 séries, 10 repetições, 45s descanso",
+          "sets": ["Cadeira abdutora 90°"]
+        },
+            { "category": "Glúteos",
+              "sets": ["Elevação pélvica na máquina"],
+              "details": "3 séries, 10 repetições, 45s descanso"
+            },
+            {
+              "category": "Posterior de Coxa",
+              "sets": [ "Mesa flexora"],
+              "details": "3 séries, 10 repetições, 45s descanso"
+            },
+            {
+              "category": "Posterior de Coxa",
+              "sets":["Cadeira flexora"],
+              "details": "3 séries, 10 repetições, 45s descanso"
+            },
+        {
+          "category": "Panturrilha",
+          "details": "3 séries, 20 repetições, 45s descanso",
+          "sets": ["Panturrilha em pé na máquina"]
+        },
+            {
+               "category": "Panturrilha",
+              "sets": [ "Panturrilha no leg press"],
+              "details": "3 séries, 20 repetições, 45s descanso"
+            }
+          ]
+        },
+
+        "2025-03-10":
+        {
+          "type": "Treino Cardio",
+          "exercises": [
+            {
+              "category": "Cardio",
+              "details": "20 minutos, ritmo moderado",
+              "sets": [ "Esteira"]
+                 
+            },
+                {"category": "Cardio",
+                  "sets": [ "Bicicleta"],
+                  "details": "20 minutos, intensidade média"
+                }
+              ]   
         }
+    
+
 
     }
 
 }
+

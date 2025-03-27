@@ -192,3 +192,85 @@ class DashboardService:
             return pd.DataFrame(data_tipo)
         else:
             return pd.DataFrame(columns=["Data", "Tipo"])
+
+    def listar_exercicio_por_data(self):
+        """Carrega e filtra os dados de treino baseado na seleção do usuário."""
+        # Carregar os dados
+        json_data, df, anos_unicos, meses_unicos = self.dashboardUtils.load_dataset_formated()
+
+        if not anos_unicos.any():
+            st.warning("Nenhum ano disponível nos dados.")
+            return None
+
+        anos_unicos = sorted(anos_unicos)
+        meses_unicos = sorted(meses_unicos)
+
+        meses_pt = {
+            1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",
+            6: "Junho", 7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro",
+            11: "Novembro", 12: "Dezembro"
+        }
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            selected_year = st.selectbox(
+                "Selecione o ano",
+                anos_unicos,
+                key="ano_intensidade"
+            )
+
+        with col2:
+            if meses_unicos:
+                selected_month_name = st.selectbox(
+                    "Selecione o mês",
+                    [meses_pt[mes] for mes in meses_unicos],
+                    key="mes_intensidade"
+                )
+                selected_month = {v: k for k, v in meses_pt.items()}[selected_month_name]
+            else:
+                st.warning("Nenhum mês disponível para o ano selecionado.")
+                return None
+
+        with col3:
+            if selected_month and selected_year:
+                set_data = self.loadFile.load_set_data()
+                valid_days = [
+                    int(date.split("-")[2])
+                    for date in set_data["schedule"].keys()
+                    if (int(date.split("-")[0]) == selected_year and
+                        int(date.split("-")[1]) == selected_month)
+                ]
+
+                if len(valid_days) > 0:
+                    selected_day = st.selectbox(
+                        "Selecione o dia",
+                        sorted(valid_days),
+                        key="dia_intensidade"
+                    )
+                else:
+                    st.warning("Nenhum dia disponível para o mês e ano selecionados.")
+                    return None
+            else:
+                return None
+
+        data_selecionada = f"{selected_year:04d}-{selected_month:02d}-{selected_day:02d}"
+        set_data = self.loadFile.load_set_data()
+
+        if data_selecionada in set_data["schedule"]:
+            treino = set_data["schedule"][data_selecionada]
+            data_tipo = [
+                {
+                    "Data": data_selecionada,
+                    "Categoria": exercicio["category"],
+                    "Exercícios": ", ".join(exercicio["sets"])
+                }
+                for exercicio in treino["exercises"]
+            ]
+            return pd.DataFrame(data_tipo)
+        else:
+            return pd.DataFrame(columns=["Data", "Categoria", "Exercícios"])
+
+
+
+
