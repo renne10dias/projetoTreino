@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from matplotlib import pyplot as plt
 
 from services.DashboardService.DashboardService import DashboardService
 from services.DashboardService.DashboardUtils import DashboardUtils
@@ -288,7 +289,102 @@ class DashboardView:
                 st.warning("⚠️ Nenhum treino encontrado para os últimos 5 registros.")
 
 
+        # Custom title using Markdown (white text for dark mode)
+        st.markdown(
+            "<h2 style='text-align: left; color: white;'>Calorias Totais e Número de Treinos por Zona de Frequência Cardíaca</h2>",
+            unsafe_allow_html=True
+        )
 
+        # Get data from the service
+        zones, calories, counts = self.service.mostrar_dados_de_treino_por_zona()
+
+        # Create a DataFrame for Plotly
+        df = pd.DataFrame({
+            'Zonas': zones,
+            'Calorias Totais': calories,
+            'Número de Treinos': counts
+        })
+
+        # Create the figure using Plotly Graph Objects
+        fig = go.Figure()
+
+        # Add bar for Total Calories
+        fig.add_trace(
+            go.Bar(
+                x=df['Zonas'],
+                y=df['Calorias Totais'],
+                name='Calorias Totais',
+                marker_color='#4CAF50',  # Green color for calories
+                text=[f'{int(val)}' for val in df['Calorias Totais']],  # Data labels
+                textposition='auto',
+                offsetgroup=1,  # Group for calories
+                width=0.4  # Width of the bars
+            )
+        )
+
+        # Add bar for Number of Workouts
+        fig.add_trace(
+            go.Bar(
+                x=df['Zonas'],
+                y=df['Número de Treinos'],
+                name='Número de Treinos',
+                marker_color='#FF5722',  # Orange color for workouts
+                text=[f'{int(val)}' for val in df['Número de Treinos']],  # Data labels
+                textposition='auto',
+                offsetgroup=2,  # Group for workouts
+                width=0.4,  # Width of the bars
+                yaxis='y2'  # Secondary y-axis
+            )
+        )
+
+        # Update layout for side-by-side bars and dark mode
+        fig.update_layout(
+            title=dict(
+                text='Calorias Totais e Número de Treinos por Zona de Frequência Cardíaca',
+                font=dict(size=14, color='white', family='Arial'),
+                x=0.5,
+                xanchor='center'
+            ),
+            xaxis_title='Zonas de Frequência Cardíaca',
+            yaxis=dict(
+                title=dict(
+                    text='Calorias Totais Queimadas',
+                    font=dict(color='#4CAF50', size=12)
+                ),
+                tickfont=dict(color='#4CAF50'),
+                gridcolor='rgba(255, 255, 255, 0.2)'
+            ),
+            yaxis2=dict(
+                title=dict(
+                    text='Número de Treinos',
+                    font=dict(color='#FF5722', size=12)
+                ),
+                tickfont=dict(color='#FF5722'),
+                overlaying='y',
+                side='right'
+            ),
+            barmode='group',  # Group bars side by side
+            legend=dict(
+                x=0.5,
+                y=-0.1,
+                xanchor='center',
+                orientation='h',
+                font=dict(size=11, color='white'),
+                bgcolor='rgba(0, 0, 0, 0.5)'
+            ),
+            bargap=0.2,  # Gap between zone groups
+            paper_bgcolor='black',
+            plot_bgcolor='black',
+            template='plotly_dark'
+        )
+
+        # Update traces for data label visibility
+        fig.update_traces(
+            textfont=dict(color='white')  # White text for data labels
+        )
+
+        # Render the chart in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown(
             "<br><h2 style='text-align: left;'>Diário de treino</h2>",
@@ -335,6 +431,8 @@ class DashboardView:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("Nenhum treino encontrado para o dia selecionado.")
+
+
 
 
 

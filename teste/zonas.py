@@ -32,7 +32,7 @@ zone_data = {
 for workout in workouts:
     avg_hr = workout["heart_rate"]["average"]
     max_hr = workout["heart_rate"]["maximum"]
-    calories = workout["calories"]
+    calories = workout["calories"]  
     zone = get_heart_rate_zone(avg_hr, max_hr)
     zone_data[zone]["calories"] += calories
     zone_data[zone]["count"] += 1

@@ -271,6 +271,51 @@ class DashboardService:
         else:
             return pd.DataFrame(columns=["Data", "Categoria", "Exercícios"])
 
+    # Function to determine heart rate zone
+    def get_heart_rate_zone(self,avg_hr, max_hr):
+        percentage = (avg_hr / max_hr) * 100
+        if percentage < 50:
+            return "Zona 1"
+        elif 50 <= percentage <= 60:
+            return "Zona 2"
+        elif 60 < percentage <= 70:
+            return "Zona 3"
+        elif 70 < percentage <= 85:
+            return "Zona 4"
+        else:
+            return "Zona 5"
+
+    # Function to prepare chart data
+    def mostrar_dados_de_treino_por_zona(self):
+        # Load the data
+        loadFile = LoadFile()
+        workouts = loadFile.load_bio_data()  # Assuming this returns your JSON bio_data
+        # Aggregate data by zone
+        zone_data = {
+            "Zona 1": {"calories": 0, "count": 0},
+            "Zona 2": {"calories": 0, "count": 0},
+            "Zona 3": {"calories": 0, "count": 0},
+            "Zona 4": {"calories": 0, "count": 0},
+            "Zona 5": {"calories": 0, "count": 0}
+        }
+
+        for workout in workouts:
+            avg_hr = workout["heart_rate"]["average"]
+            max_hr = workout["heart_rate"]["maximum"]
+            calories = workout["calories"]
+            zone = self.get_heart_rate_zone(avg_hr, max_hr)
+            zone_data[zone]["calories"] += calories
+            zone_data[zone]["count"] += 1
+
+        # Extract data for plotting
+        zones = list(zone_data.keys())
+        calories = [zone_data[zone]["calories"] for zone in zones]
+        counts = [zone_data[zone]["count"] for zone in zones]
+
+        return zones, calories, counts
+
+
+
 
 
 
