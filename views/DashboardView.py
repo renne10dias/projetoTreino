@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 
 from services.DashboardService.DashboardService import DashboardService
 from services.DashboardService.DashboardUtils import DashboardUtils
+from utils.LoadFile import LoadFile
 
 
 class DashboardView:
@@ -15,6 +16,7 @@ class DashboardView:
     def __init__(self):
         self.service = DashboardService()
         self.dashboardUtils = DashboardUtils()
+        self.loadFile = LoadFile()
         self.data_selecionada_card_table = None
 
     def create_intensity_chart(self):
@@ -289,9 +291,11 @@ class DashboardView:
                 st.warning("⚠️ Nenhum treino encontrado para os últimos 5 registros.")
 
 
-        # Custom title using Markdown (white text for dark mode)
+
+
+        # Second Chart: Calorias Totais e Número de Treinos por Zona
         st.markdown(
-            "<h2 style='text-align: left; color: white;'>Calorias Totais e Número de Treinos por Zona de Frequência Cardíaca</h2>",
+            "<h2 style='text-align: left;'>Calorias Totais e Número de Treinos por Zona de Frequência Cardíaca</h2>",
             unsafe_allow_html=True
         )
 
@@ -305,92 +309,207 @@ class DashboardView:
             'Número de Treinos': counts
         })
 
-        # Create the figure using Plotly Graph Objects
-        fig = go.Figure()
+        # Filter out zones where both calories and counts are zero
+        df_filtrado = df[(df['Calorias Totais'] > 0) | (df['Número de Treinos'] > 0)]
 
-        # Add bar for Total Calories
-        fig.add_trace(
-            go.Bar(
-                x=df['Zonas'],
-                y=df['Calorias Totais'],
-                name='Calorias Totais',
-                marker_color='#4CAF50',  # Green color for calories
-                text=[f'{int(val)}' for val in df['Calorias Totais']],  # Data labels
-                textposition='auto',
-                offsetgroup=1,  # Group for calories
-                width=0.4  # Width of the bars
-            )
+        # Verifica se há dados antes de criar o gráfico
+        if df_filtrado.empty:
+            st.warning("Nenhum dado disponível para exibir.")
+            return
+
+        # Convert to long-form DataFrame for side-by-side bars
+        df_long = pd.melt(
+            df_filtrado,
+            id_vars=['Zonas'],
+            value_vars=['Calorias Totais', 'Número de Treinos'],
+            var_name='Categoria',
+            value_name='Valor'
         )
 
-        # Add bar for Number of Workouts
-        fig.add_trace(
-            go.Bar(
-                x=df['Zonas'],
-                y=df['Número de Treinos'],
-                name='Número de Treinos',
-                marker_color='#FF5722',  # Orange color for workouts
-                text=[f'{int(val)}' for val in df['Número de Treinos']],  # Data labels
-                textposition='auto',
-                offsetgroup=2,  # Group for workouts
-                width=0.4,  # Width of the bars
-                yaxis='y2'  # Secondary y-axis
-            )
+        # Add the original counts to the long-form DataFrame for hover info
+        df_long['Quantidade de Treinos'] = df_long['Zonas'].map(
+            df_filtrado.set_index('Zonas')['Número de Treinos'])
+
+        # Define a color map for each zone
+        color_map = {
+            'Zona 1': '#FF4B4B',  # Red
+            'Zona 2': '#4CAF50',  # Green
+            'Zona 3': '#FFC107',  # Yellow
+            'Zona 4': '#1E88E5',  # Blue
+            'Zona 5': '#AB47BC'  # Purple
+        }
+
+        # Gráfico de barras
+        fig2 = px.bar(
+            df_long,
+            x='Zonas',
+            y='Valor',
+            color='Zonas',  # Color by zone
+            color_discrete_map=color_map,
+            labels={
+                'Valor': 'Calorias Totais / Número de Treinos',
+                'Zonas': 'Zonas de Frequência Cardíaca'
+            },
+            category_orders={"Zonas": ["Zona 1", "Zona 2", "Zona 3", "Zona 4", "Zona 5"]},
+            barmode='group',  # Side-by-side bars
+            text=df_long['Valor'].apply(lambda x: f'{int(x)}'),  # Data labels
+            custom_data=['Categoria', 'Quantidade de Treinos']  # Pass category and counts for hover
         )
 
-        # Update layout for side-by-side bars and dark mode
-        fig.update_layout(
-            title=dict(
-                text='Calorias Totais e Número de Treinos por Zona de Frequência Cardíaca',
-                font=dict(size=14, color='white', family='Arial'),
-                x=0.5,
-                xanchor='center'
-            ),
-            xaxis_title='Zonas de Frequência Cardíaca',
-            yaxis=dict(
-                title=dict(
-                    text='Calorias Totais Queimadas',
-                    font=dict(color='#4CAF50', size=12)
-                ),
-                tickfont=dict(color='#4CAF50'),
-                gridcolor='rgba(255, 255, 255, 0.2)'
-            ),
-            yaxis2=dict(
-                title=dict(
-                    text='Número de Treinos',
-                    font=dict(color='#FF5722', size=12)
-                ),
-                tickfont=dict(color='#FF5722'),
-                overlaying='y',
-                side='right'
-            ),
-            barmode='group',  # Group bars side by side
+        # Customize hover template to show "Quantidade de treinos"
+        fig2.update_traces(
+            hovertemplate="%{customdata[0]}: %{y}<br>Quantidade de treinos = %{customdata[1]}<br>Zona: %{x}",
+            textposition='auto'
+        )
+
+        # Update layout with legend on the right
+        fig2.update_layout(
             legend=dict(
-                x=0.5,
-                y=-0.1,
-                xanchor='center',
-                orientation='h',
-                font=dict(size=11, color='white'),
-                bgcolor='rgba(0, 0, 0, 0.5)'
+                x=1.05,  # Position to the right of the chart
+                y=0.5,  # Vertically centered
+                xanchor='left',
+                yanchor='middle',
+                orientation='v',  # Vertical legend
+                title_text='Zonas'  # Add a title to the legend
             ),
-            bargap=0.2,  # Gap between zone groups
-            paper_bgcolor='black',
-            plot_bgcolor='black',
-            template='plotly_dark'
+            showlegend=True
         )
 
-        # Update traces for data label visibility
+        # Render the chart in Streamlit
+        st.plotly_chart(fig2, use_container_width=True)
+
+
+
+        # Title for the chart
+        st.markdown(
+            "<h2 style='text-align: left;'>Eficiência Cardiorrespiratória e VO2 Máx</h2>",
+            unsafe_allow_html=True
+        )
+
+        # Get raw workout data from the service
+        workouts = self.loadFile.load_bio_data()
+
+        # Create a DataFrame from raw workout data
+        df = pd.DataFrame(workouts)
+
+        # Filter out invalid entries (e.g., missing HR or calories)
+        df = df.dropna(subset=['heart_rate', 'calories'])
+        df = df[(df['calories'] > 0)]
+
+        if df.empty:
+            st.warning("Nenhum dado disponível para exibir.")
+            return
+
+        # Extract HR Médio and calculate VO2
+        df['HR Médio'] = df['heart_rate'].apply(lambda x: x['average'] if isinstance(x, dict) else x)
+
+        # Calculate the training zone for each workout
+        def get_heart_rate_zone(avg_hr, max_hr=200):  # Default HR Max = 200 if not provided
+            percentage = (avg_hr / max_hr) * 100
+            if percentage < 50:
+                return "Zona 1"
+            elif 50 <= percentage <= 60:
+                return "Zona 2"
+            elif 60 < percentage <= 70:
+                return "Zona 3"
+            elif 70 < percentage <= 85:
+                return "Zona 4"
+            else:
+                return "Zona 5"
+
+        # Add a 'Zona' column to the DataFrame
+        df['Zona'] = df['HR Médio'].apply(lambda x: get_heart_rate_zone(x))
+
+        # Calculate VO2 using Swain et al. (1994) formula
+        df['VO2 Estimado'] = df['HR Médio'].apply(lambda x: 0.835 * x - 39.3)
+
+        # Calculate calories per minute (assuming duration is available in minutes)
+        # If duration isn't available, mock it as 30 minutes
+        df['Duração (min)'] = df.get('duration', 30)
+
+        # Convert 'Duração (min)' to numeric, coercing errors to NaN
+        df['Duração (min)'] = pd.to_numeric(df['Duração (min)'], errors='coerce')
+
+        # Handle NaN values in duration
+        if df['Duração (min)'].isna().any():
+            st.warning(
+                "Alguns valores de duração não puderam ser convertidos para números. Usando 30 minutos como padrão para esses casos.")
+            df['Duração (min)'].fillna(30, inplace=True)
+
+        # Calculate calories per minute
+        df['Calorias por Minuto'] = df['calories'] / df['Duração (min)']
+
+        # Define color map for zones
+        color_map = {
+            'Zona 1': '#FF4B4B',  # Red
+            'Zona 2': '#4CAF50',  # Green
+            'Zona 3': '#FFC107',  # Yellow
+            'Zona 4': '#1E88E5',  # Blue
+            'Zona 5': '#AB47BC'  # Purple
+        }
+
+        # Create scatter plot
+        fig = px.scatter(
+            df,
+            x='HR Médio',
+            y='VO2 Estimado',
+            size='Calorias por Minuto',
+            color='Zona',  # Color by zone
+            color_discrete_map=color_map,
+            labels={
+                'HR Médio': 'Frequência Cardíaca Média (bpm)',
+                'VO2 Estimado': 'VO2 Estimado (mL/kg/min)',
+                'Zona': 'Zona de Treino'
+            },
+            category_orders={"Zona": ["Zona 1", "Zona 2", "Zona 3", "Zona 4", "Zona 5"]},
+            hover_data={
+                'calories': True,
+                'Duração (min)': True,
+                'Calorias por Minuto': ':.2f',
+                'Zona': True
+            },
+            title='Eficiência Cardiorrespiratória e VO2 Máx por Treino',
+            size_max=40
+        )
+
+        # Customize hover template
         fig.update_traces(
-            textfont=dict(color='white')  # White text for data labels
+            hovertemplate=(
+                "Zona: %{customdata[0]}<br>"
+                "HR Médio: %{x} bpm<br>"
+                "VO2 Estimado: %{y:.2f} mL/kg/min<br>"
+                "Calorias Totais: %{customdata[1]}<br>"
+                "Duração: %{customdata[2]} min<br>"
+                "Eficiência: %{customdata[3]:.2f} cal/min"
+            ),
+            customdata=df[['Zona', 'calories', 'Duração (min)', 'Calorias por Minuto']].values
+        )
+
+        # Update layout
+        fig.update_layout(
+            legend=dict(
+                x=1.05,
+                y=0.5,
+                xanchor='left',
+                yanchor='middle',
+                orientation='v',
+                title_text='Zonas'
+            ),
+            showlegend=True,  # Show legend for zones
+            font=dict(color=st.get_option("theme.textColor") or "black")
         )
 
         # Render the chart in Streamlit
         st.plotly_chart(fig, use_container_width=True)
 
+
+
+
+
         st.markdown(
             "<br><h2 style='text-align: left;'>Diário de treino</h2>",
             unsafe_allow_html=True
         )
-
         with st.expander("📋 Lista os treinos"):
             tabela_categorias_dia = self.service.listar_exercicio_por_data()
             if tabela_categorias_dia is not None and not tabela_categorias_dia.empty:
