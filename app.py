@@ -17,6 +17,7 @@ def main():
     # Carregar dados biológicos
     loader = LoadFile()
     workouts = loader.load_bio_data()
+    set_data = loader.load_set_data()
 
     dashboard_view = Zona2(workouts)
     dashboard_view.create_cardiorespiratory_efficiency_charts()

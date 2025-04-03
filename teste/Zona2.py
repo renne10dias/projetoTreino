@@ -3,6 +3,10 @@ import plotly.subplots as sp
 import streamlit as st
 import pandas as pd
 import re
+from datetime import datetime
+
+from utils.LoadFile import LoadFile
+
 
 class Zona2:
     def __init__(self, workouts):
@@ -383,3 +387,52 @@ class Zona2:
                     st.plotly_chart(fig_recuperacao, use_container_width=True)
                 else:
                     st.info("Insira um valor válido para HR Após 1 Min e clique em 'Calcular' para ver o gráfico.")
+
+            # Container para o Diário de Treino
+            with st.container():
+                st.markdown("<h2 style='text-align: left;'>Diário de Treino</h2>", unsafe_allow_html=True)
+
+                # Carregar dados biológicos
+                loader = LoadFile()
+                set_data = loader.load_set_data()
+
+                # Seleção de mês e ano
+                col_mes, col_ano = st.columns(2)
+                with col_mes:
+                    mes = st.selectbox("Mês", list(range(1, 13)), index=9)  # Padrão: Outubro (10)
+                with col_ano:
+                    anos_disponiveis = sorted(set(pd.to_datetime(list(set_data["schedule"].keys())).year))
+                    ano = st.selectbox("Ano", anos_disponiveis,
+                                       index=anos_disponiveis.index(2024) if 2024 in anos_disponiveis else 0)
+
+                # Filtrar treinos do mês e ano selecionados
+                data_inicio = datetime(ano, mes, 1)
+                data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
+                treinos_mes = {date: info for date, info in set_data["schedule"].items()
+                               if data_inicio <= datetime.strptime(date, '%Y-%m-%d') < data_fim}
+
+                if not treinos_mes:
+                    st.warning(f"Nenhum treino encontrado para {mes}/{ano}.")
+                else:
+                    for date, treino in sorted(treinos_mes.items()):
+                        with st.expander(f"Treino do dia {date}"):
+                            try:
+                                df_treino = pd.DataFrame(treino["exercises"])
+                                df_treino["type"] = treino["type"]
+
+                                # Garantir que as colunas esperadas existam, preenchendo com "Não informado" se ausentes
+                                for col in ["category", "details", "sets"]:
+                                    if col not in df_treino.columns:
+                                        df_treino[col] = "Não informado"
+                                df_treino["sets"] = df_treino["sets"].apply(
+                                    lambda x: ", ".join(x) if isinstance(x, list) else str(x))
+
+                                # Selecionar apenas as colunas disponíveis e renomear
+                                colunas_disponiveis = [col for col in ["type", "category", "details", "sets"] if
+                                                       col in df_treino.columns]
+                                st.table(df_treino[colunas_disponiveis].rename(
+                                    columns={"type": "Tipo", "category": "Categoria", "details": "Detalhes",
+                                             "sets": "Exercícios"}
+                                ))
+                            except Exception as e:
+                                st.error(f"Erro ao processar o treino do dia {date}: {str(e)}")
