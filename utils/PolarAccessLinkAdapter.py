@@ -16,9 +16,9 @@ class PolarAccessLinkAdapter(PolarAccessLinkExample):
 
     def _load_config(self):
         # Carrega a configuração do arquivo
-        from utils import load_config  # Importa o método utilitário
+        from utils.utils import load_config  # Importa o método utilitário
         import os
-        CONFIG_FILENAME = os.path.join(os.path.dirname(__file__), 'config.yml')
+        CONFIG_FILENAME = os.path.join(os.path.dirname(__file__), '../config.yml')
         return load_config(CONFIG_FILENAME)
 
     def _initialize_accesslink(self):

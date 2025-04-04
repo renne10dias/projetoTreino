@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from utils.utils import load_config, save_config, pretty_print_json, save_as_json, save_as_json_data_transacional
 from accesslink import AccessLink
 import os
-
-from utils.Utils_web import Utils_web
 
 CONFIG_FILENAME = os.path.join(os.path.dirname(__file__), 'config.yml')
 
@@ -16,7 +15,6 @@ class PolarAccessLinkExample(object):
     def __init__(self):
         # Carrega a configuração do arquivo config.yml
         self.config = load_config(CONFIG_FILENAME)
-        self.utils_web = Utils_web()
 
         # Verifica se o token de acesso está presente na configuração
         if "access_token" not in self.config:
@@ -69,14 +67,14 @@ class PolarAccessLinkExample(object):
             print("O JSON de exercícios está vazio.")
         else:
             print("O JSON de exercícios contém dados:", exercise)
-            self.utils_web.pretty_print_json(exercise)
-            self.utils_web.save_as_json(exercise, 'Data/bioData.json')
+            pretty_print_json(exercise)
+            save_as_json(exercise, 'Data/bioData.json')
 
     def get_user_information(self):
         # Obtém informações do usuário
         user_info = self.accesslink.users.get_information(user_id=self.config["user_id"],
                                                           access_token=self.config["access_token"])
-        self.utils_web.pretty_print_json(user_info)
+        pretty_print_json(user_info)
 
     def check_available_data(self):
         # Verifica dados disponíveis para sincronização
@@ -87,7 +85,7 @@ class PolarAccessLinkExample(object):
             return
 
         print("Dados disponíveis:")
-        self.utils_web.pretty_print_json(available_data)
+        pretty_print_json(available_data)
         for item in available_data["available-user-data"]:
             if item["data-type"] == "EXERCISE":
                 self.get_exercises()
@@ -104,7 +102,7 @@ class PolarAccessLinkExample(object):
         # Remove o token e o ID do usuário da configuração
         del self.config["access_token"]
         del self.config["user_id"]
-        self.utils_web.save_config(self.config, CONFIG_FILENAME)
+        save_config(self.config, CONFIG_FILENAME)
 
         print("Token de acesso revogado com sucesso.")
         self.exit()
@@ -127,8 +125,8 @@ class PolarAccessLinkExample(object):
             exercise_summary = transaction.get_exercise_summary(url)
 
             print("Resumo do exercício:")
-            self.utils_web.pretty_print_json(exercise_summary)
-            self.utils_web.save_as_json_data_transacional(exercise_summary, 'Data/exercise_summary.json')
+            pretty_print_json(exercise_summary)
+            save_as_json_data_transacional(exercise_summary, 'Data/exercise_summary.json')
 
         transaction.commit()
 
@@ -146,8 +144,8 @@ class PolarAccessLinkExample(object):
             activity_summary = transaction.get_activity_summary(url)
 
             print("Resumo da atividade:")
-            self.utils_web.pretty_print_json(activity_summary)
-            self.utils_web.save_as_json_data_transacional(activity_summary, 'Data/activity_summary.json')
+            pretty_print_json(activity_summary)
+            save_as_json_data_transacional(activity_summary, 'Data/activity_summary.json')
 
         transaction.commit()
 
@@ -165,8 +163,8 @@ class PolarAccessLinkExample(object):
             physical_info = transaction.get_physical_info(url)
 
             print("Informação física:")
-            self.utils_web.pretty_print_json(physical_info)
-            self.utils_web.save_as_json_data_transacional(physical_info, 'Data/physical_info.json')
+            pretty_print_json(physical_info)
+            save_as_json_data_transacional(physical_info, 'Data/physical_info.json')
         transaction.commit()
 
 

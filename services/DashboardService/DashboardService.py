@@ -1,4 +1,5 @@
 import json
+import re
 
 import pandas as pd
 import streamlit as st
@@ -193,121 +194,53 @@ class DashboardService:
         else:
             return pd.DataFrame(columns=["Data", "Tipo"])
 
-    def listar_exercicio_por_data(self):
-        """Carrega e filtra os dados de treino baseado na seleção do usuário."""
-        # Carregar os dados
-        json_data, df, anos_unicos, meses_unicos = self.dashboardUtils.load_dataset_formated()
+    def parse_duration(self, duration_str):
+        """Converte duração no formato ISO 8601 (ex.: PT3370S) para minutos."""
+        match = re.match(r"PT([\d.]+)S", duration_str)
+        if match:
+            seconds = float(match.group(1))
+            return seconds / 60
+        return 30  # Valor padrão se não for possível converter
 
-        if not anos_unicos.any():
-            st.warning("Nenhum ano disponível nos dados.")
-            return None
-
-        anos_unicos = sorted(anos_unicos)
-        meses_unicos = sorted(meses_unicos)
-
-        meses_pt = {
-            1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",
-            6: "Junho", 7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro",
-            11: "Novembro", 12: "Dezembro"
-        }
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            selected_year = st.selectbox(
-                "Selecione o ano",
-                anos_unicos,
-                key="ano_intensidade"
-            )
-
-        with col2:
-            if meses_unicos:
-                selected_month_name = st.selectbox(
-                    "Selecione o mês",
-                    [meses_pt[mes] for mes in meses_unicos],
-                    key="mes_intensidade"
-                )
-                selected_month = {v: k for k, v in meses_pt.items()}[selected_month_name]
-            else:
-                st.warning("Nenhum mês disponível para o ano selecionado.")
-                return None
-
-        with col3:
-            if selected_month and selected_year:
-                set_data = self.loadFile.load_set_data()
-                valid_days = [
-                    int(date.split("-")[2])
-                    for date in set_data["schedule"].keys()
-                    if (int(date.split("-")[0]) == selected_year and
-                        int(date.split("-")[1]) == selected_month)
-                ]
-
-                if len(valid_days) > 0:
-                    selected_day = st.selectbox(
-                        "Selecione o dia",
-                        sorted(valid_days),
-                        key="dia_intensidade"
-                    )
-                else:
-                    st.warning("Nenhum dia disponível para o mês e ano selecionados.")
-                    return None
-            else:
-                return None
-
-        data_selecionada = f"{selected_year:04d}-{selected_month:02d}-{selected_day:02d}"
-        set_data = self.loadFile.load_set_data()
-
-        if data_selecionada in set_data["schedule"]:
-            treino = set_data["schedule"][data_selecionada]
-            data_tipo = [
-                {
-                    "Data": data_selecionada,
-                    "Categoria": exercicio["category"],
-                    "Exercícios": ", ".join(exercicio["sets"])
-                }
-                for exercicio in treino["exercises"]
-            ]
-            return pd.DataFrame(data_tipo)
-        else:
-            return pd.DataFrame(columns=["Data", "Categoria", "Exercícios"])
-
-    # Function to determine heart rate zone
-    def get_heart_rate_zone(self,avg_hr, max_hr):
+    def get_heart_rate_zone(self, avg_hr, max_hr):
+        """Classifica a zona de intensidade cardíaca com base no texto fornecido."""
         percentage = (avg_hr / max_hr) * 100
         if percentage < 50:
-            return "Zona 1"
+            return "Zona 1 - Recuperação Ativa"
         elif 50 <= percentage <= 60:
-            return "Zona 2"
+            return "Zona 2 - Aeróbico Leve"
         elif 60 < percentage <= 70:
-            return "Zona 3"
+            return "Zona 3 - Aeróbico Moderado"
         elif 70 < percentage <= 85:
-            return "Zona 4"
+            return "Zona 4 - Limiar Anaeróbico"
         else:
-            return "Zona 5"
+            return "Zona 5 - Alta Intensidade / VO2 Máx"
 
-    # Function to prepare chart data
     def mostrar_dados_de_treino_por_zona(self):
-        # Load the data
-        loadFile = LoadFile()
-        workouts = loadFile.load_bio_data()  # Assuming this returns your JSON bio_data
-        # Aggregate data by zone
+        """Prepara os dados de treino por zona de frequência cardíaca."""
+        workouts = self.loadFile.load_bio_data()  # Supondo que retorna o JSON de bio_data
+        if workouts is None:
+            workouts = workouts
+
+        # Inicializar dicionário com todas as zonas possíveis usando os nomes completos
         zone_data = {
-            "Zona 1": {"calories": 0, "count": 0},
-            "Zona 2": {"calories": 0, "count": 0},
-            "Zona 3": {"calories": 0, "count": 0},
-            "Zona 4": {"calories": 0, "count": 0},
-            "Zona 5": {"calories": 0, "count": 0}
+            "Zona 1 - Recuperação Ativa": {"calories": 0, "count": 0},
+            "Zona 2 - Aeróbico Leve": {"calories": 0, "count": 0},
+            "Zona 3 - Aeróbico Moderado": {"calories": 0, "count": 0},
+            "Zona 4 - Limiar Anaeróbico": {"calories": 0, "count": 0},
+            "Zona 5 - Alta Intensidade / VO2 Máx": {"calories": 0, "count": 0}
         }
 
+        # Processar cada treino e acumular calorias e contagem por zona
         for workout in workouts:
             avg_hr = workout["heart_rate"]["average"]
-            max_hr = workout["heart_rate"]["maximum"]
+            max_hr = workout["heart_rate"].get("maximum", 200)  # Usar 200 como padrão se não fornecido
             calories = workout["calories"]
             zone = self.get_heart_rate_zone(avg_hr, max_hr)
             zone_data[zone]["calories"] += calories
             zone_data[zone]["count"] += 1
 
-        # Extract data for plotting
+        # Extrair dados para plotagem
         zones = list(zone_data.keys())
         calories = [zone_data[zone]["calories"] for zone in zones]
         counts = [zone_data[zone]["count"] for zone in zones]

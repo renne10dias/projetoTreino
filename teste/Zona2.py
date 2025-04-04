@@ -436,3 +436,7 @@ class Zona2:
                                 ))
                             except Exception as e:
                                 st.error(f"Erro ao processar o treino do dia {date}: {str(e)}")
+
+
+
+
