@@ -263,50 +263,6 @@ class DashboardView:
             st.plotly_chart(fig_calorias, use_container_width=True)
 
 
-        st.subheader("📌 Tabela de Treinos Recentes")
-
-        with st.expander("📋 Últimos 5 Treinos"):
-            # Carregar os dados da função de serviço
-            tabela_categorias_dia = self.service.col4_exercícios_por_categoria()
-
-            if not tabela_categorias_dia.empty:
-                # Criar figura do Plotly com tabela formatada
-                fig = go.Figure(
-                    data=[go.Table(
-                        columnorder=[1, 2],
-                        columnwidth=[20, 50],  # Ajuste das larguras das colunas
-                        header=dict(
-                            values=["📅 Data", "🏋️ Tipo"],
-                            font=dict(size=14, color='white'),
-                            fill_color='#264653',
-                            align=['left', 'center'],
-                            height=30
-                        ),
-                        cells=dict(
-                            values=[
-                                tabela_categorias_dia["Data"].tolist(),
-                                tabela_categorias_dia["Tipo"].tolist()
-                            ],
-                            font=dict(size=12, color='black'),
-                            fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
-                            align=['left', 'center'],
-                            height=25
-                        )
-                    )]
-                )
-
-                # Layout da tabela
-                fig.update_layout(
-                    title_text="📊 Resumo dos Últimos 5 Treinos",
-                    title_font=dict(size=18, color='#264653'),
-                    margin=dict(l=0, r=10, b=10, t=40),
-                    height=300  # Ajustei a altura para uma tabela menor
-                )
-
-                # Exibir tabela
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.warning("⚠️ Nenhum treino encontrado para os últimos 5 registros.")
 
         with st.container():
             # Gráfico 1: Calorias Totais e Número de Treinos por Zona
