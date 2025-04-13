@@ -434,62 +434,64 @@ class DashboardView:
                 "Zona 5 - Alta Intensidade / VO2 Máx": '#AB47BC'
             }
 
-            fig = sp.make_subplots(
-                rows=1, cols=num_zones,
-                subplot_titles=[f"{zone}" for zone in unique_zones],
-                horizontal_spacing=0.05
+            # Criar um único gráfico de dispersão com todas as zonas
+            fig = px.scatter(
+                df,
+                x='HR Médio',
+                y='VO2 Estimado',
+                size='Calorias por Minuto',
+                color='Zona',  # Diferenciar as zonas por cor
+                color_discrete_map=color_map,
+                labels={
+                    'HR Médio': 'Frequência Cardíaca Média (bpm)',
+                    'VO2 Estimado': 'VO2 Estimado (mL/kg/min)',
+                    'Zona': 'Zona de Intensidade'
+                },
+                hover_data={
+                    'calories': True,
+                    'Duração (min)': ':.2f',
+                    'Calorias por Minuto': ':.2f',
+                    'HR Máximo': True
+                }
             )
 
-            for i, zone in enumerate(unique_zones, 1):
-                zone_df = df[df['Zona'] == zone]
-                if not zone_df.empty:
-                    scatter = px.scatter(
-                        zone_df,
-                        x='HR Médio',
-                        y='VO2 Estimado',
-                        size='Calorias por Minuto',
-                        color_discrete_sequence=[color_map[zone]],
-                        labels={
-                            'HR Médio': 'Frequência Cardíaca Média (bpm)',
-                            'VO2 Estimado': 'VO2 Estimado (mL/kg/min)'
-                        },
-                        hover_data={
-                            'calories': True,
-                            'Duração (min)': ':.2f',
-                            'Calorias por Minuto': ':.2f',
-                            'HR Máximo': True
-                        }
-                    )
+            # Personalizar o hover
+            fig.update_traces(
+                hovertemplate=(
+                    "HR Médio: %{x} bpm<br>"
+                    "HR Máximo: %{customdata[0]} bpm<br>"
+                    "VO2 Estimado: %{y:.2f} mL/kg/min<br>"
+                    "Calorias Totais: %{customdata[1]}<br>"
+                    "Duração: %{customdata[2]:.2f} min<br>"
+                    "Eficiência: %{customdata[3]:.2f} cal/min<br>"
+                    "Zona: %{fullData.name}"
+                ),
+                customdata=df[['HR Máximo', 'calories', 'Duração (min)', 'Calorias por Minuto']].values
+            )
 
-                    for trace in scatter.data:
-                        fig.add_trace(trace, row=1, col=i)
-
-                    fig.update_traces(
-                        hovertemplate=(
-                            "HR Médio: %{x} bpm<br>"
-                            "HR Máximo: %{customdata[0]} bpm<br>"
-                            "VO2 Estimado: %{y:.2f} mL/kg/min<br>"
-                            "Calorias Totais: %{customdata[1]}<br>"
-                            "Duração: %{customdata[2]:.2f} min<br>"
-                            "Eficiência: %{customdata[3]:.2f} cal/min"
-                        ),
-                        customdata=zone_df[['HR Máximo', 'calories', 'Duração (min)', 'Calorias por Minuto']].values,
-                        row=1, col=i
-                    )
-
+            # Ajustar o layout do gráfico
             fig.update_layout(
                 height=400,
-                width=300 * num_zones,
-                showlegend=False,
+                width=800,  # Ajuste a largura para um único gráfico
                 title_text="Eficiência Cardiorrespiratória por Zona de Intensidade",
-                title_x=0.5
+                title_x=0.5,
+                xaxis_title="Frequência Cardíaca Média (bpm)",
+                yaxis_title="VO2 Estimado (mL/kg/min)",
+                showlegend=True,  # Mostrar a legenda para identificar as zonas
+                legend=dict(
+                    x=1.05,
+                    y=0.5,
+                    xanchor='left',
+                    yanchor='middle',
+                    orientation='v',
+                    title_text='Zonas'
+                )
             )
 
-            for i in range(1, num_zones + 1):
-                fig.update_xaxes(title_text="Frequência Cardíaca Média (bpm)", row=1, col=i)
-                fig.update_yaxes(title_text="VO2 Estimado (mL/kg/min)", row=1, col=i)
-
             st.plotly_chart(fig, use_container_width=True)
+
+
+
 
         with st.container():
             st.markdown(
