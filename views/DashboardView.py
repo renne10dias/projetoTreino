@@ -482,107 +482,73 @@ class DashboardView:
             st.markdown("""
             A recuperação cardíaca pós-exercício é um indicador importante para avaliar fadiga e condicionamento cardiovascular. 
             Segundo estudos de Imai et al. (1994), uma rápida queda da frequência cardíaca após o exercício está associada a um bom nível de aptidão aeróbica. 
-            A recuperação cardíaca pode ser calculada como **Recuperação Cardíaca = HR Máximo − HR Médio após 1 min de descanso**. 
-            Quando essa métrica diminui ao longo do tempo, pode indicar fadiga acumulada ou overtraining (Meeusen et al., 2013). 
+            Quando a recuperação cardíaca diminui ao longo do tempo, pode indicar fadiga acumulada ou overtraining (Meeusen et al., 2013). 
             Além disso, se a HR Média aumenta sem aumento correspondente de calorias queimadas, pode ser um sinal de ineficiência energética e necessidade de ajuste no treinamento.
             """)
 
             df['Data'] = pd.to_datetime(df['start_time'])
 
-            col1, col2 = st.columns(2)
+            # Mapear nomes dos meses para números
+            meses_pt_to_num = {
+                "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5,
+                "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10,
+                "Novembro": 11, "Dezembro": 12
+            }
 
-            with col1:
-                st.markdown("#### Evolução ao Longo do Tempo")
-                fig_fadiga = px.line(
-                    df,
-                    x='Data',
-                    y=['HR Médio', 'Calorias por Minuto'],
-                    labels={
-                        'Data': 'Data do Treino',
-                        'value': 'Valor',
-                        'variable': 'Métrica'
-                    },
-                    title='HR Médio e Eficiência Energética'
-                )
-                fig_fadiga.update_layout(
-                    yaxis_title="HR (bpm) / Calorias por Minuto (cal/min)",
-                    font=dict(color="black")
-                )
-                st.plotly_chart(fig_fadiga, use_container_width=True)
+            # Filtrar os dados pelo mês e ano selecionados
+            mes = meses_pt_to_num[selected_month_Intensity]
+            ano = selected_year_Intensity
+            data_inicio = datetime(ano, mes, 1)
+            data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
+            df_filtrado_mes = df[(df['Data'] >= data_inicio) & (df['Data'] < data_fim)].copy()
 
-            with col2:
-                st.markdown("#### Análise de Recuperação Cardíaca")
-                st.markdown(
-                    "Selecione a data do treino e insira o valor de HR Após 1 Minuto para calcular a Recuperação Cardíaca.")
+            if df_filtrado_mes.empty:
+                st.warning(f"Nenhum dado disponível para {selected_month_Intensity}/{ano}.")
+            else:
+                # Calcular a recuperação cardíaca (HR Máximo - HR Médio)
+                df_filtrado_mes['Recuperação Cardíaca'] = df_filtrado_mes['HR Máximo'] - df_filtrado_mes['HR Médio']
 
-                if 'HR Após 1 Min' not in df.columns:
-                    df['HR Após 1 Min'] = pd.NA
-                if 'Recuperação Cardíaca' not in df.columns:
-                    df['Recuperação Cardíaca'] = pd.NA
+                col1, col2 = st.columns(2)
 
-                col_data, col_hr = st.columns(2)
-
-                with col_data:
-                    datas_treino = df['Data'].dt.strftime('%Y-%m-%d %H:%M').tolist()
-                    data_mais_recente = max(datas_treino)
-                    data_selecionada = st.selectbox(
-                        "Data do Treino",
-                        datas_treino,
-                        index=datas_treino.index(data_mais_recente)
+                with col1:
+                    st.markdown("#### Recuperação Cardíaca ao Longo do Mês")
+                    fig_recuperacao = px.line(
+                        df_filtrado_mes,
+                        x='Data',
+                        y='Recuperação Cardíaca',
+                        labels={
+                            'Data': 'Data do Treino',
+                            'Recuperação Cardíaca': 'Recuperação Cardíaca (bpm)'
+                        },
+                        title=f'Recuperação Cardíaca - {selected_month_Intensity}/{ano}'
                     )
-
-                treino_selecionado = df[df['Data'].dt.strftime('%Y-%m-%d %H:%M') == data_selecionada].iloc[0]
-                hr_max = treino_selecionado['HR Máximo']
-
-                with col_hr:
-                    hr_apos_1min = st.number_input(
-                        f"HR Após 1 Min (HR Máx: {hr_max} bpm)",
-                        min_value=0.0,
-                        max_value=float(hr_max),
-                        value=0.0,
-                        step=1.0,
-                        key=f"HR Após 1 Min - {data_selecionada}"
+                    fig_recuperacao.update_layout(
+                        xaxis_title="Data",
+                        yaxis_title="Recuperação Cardíaca (bpm)",
+                        font=dict(color="black"),
+                        xaxis=dict(tickangle=45)
                     )
+                    st.plotly_chart(fig_recuperacao, use_container_width=True)
 
-                calcular = st.button("Calcular")
-
-                if calcular and hr_apos_1min > 0:
-                    index_selecionado = df.index[df['Data'].dt.strftime('%Y-%m-%d %H:%M') == data_selecionada][0]
-                    df.at[index_selecionado, 'HR Após 1 Min'] = hr_apos_1min
-                    df.at[index_selecionado, 'Recuperação Cardíaca'] = hr_max - hr_apos_1min
-
-                    df_recuperacao = df[df['Data'].dt.strftime('%Y-%m-%d %H:%M') == data_selecionada][
-                        ['HR Médio', 'HR Máximo', 'HR Após 1 Min', 'Recuperação Cardíaca']]
-
-                    if df_recuperacao.empty or df_recuperacao.isna().all().all():
-                        st.error("Erro: Dados de recuperação cardíaca não disponíveis ou inválidos.")
-                    else:
-                        df_recuperacao_long = pd.melt(
-                            df_recuperacao,
-                            value_vars=['HR Médio', 'HR Máximo', 'HR Após 1 Min', 'Recuperação Cardíaca'],
-                            var_name='Métrica',
-                            value_name='Valor (bpm)'
-                        )
-
-                        if df_recuperacao_long['Valor (bpm)'].isna().all():
-                            st.error("Erro: Todos os valores de frequência cardíaca são inválidos (NaN).")
-                        else:
-                            fig_recuperacao = px.bar(
-                                df_recuperacao_long,
-                                x='Métrica',
-                                y='Valor (bpm)',
-                                labels={'Métrica': 'Métrica', 'Valor (bpm)': 'Valor (bpm)'},
-                                title=f'Recuperação Cardíaca - {data_selecionada}',
-                                text_auto=True
-                            )
-                            fig_recuperacao.update_traces(textposition='auto')
-                            fig_recuperacao.update_layout(
-                                yaxis_title="Frequência Cardíaca (bpm)",
-                                font=dict(color="black")
-                            )
-                            st.plotly_chart(fig_recuperacao, use_container_width=True)
-                else:
-                    st.info("Insira um valor válido para HR Após 1 Min e clique em 'Calcular' para ver o gráfico.")
+                with col2:
+                    st.markdown("#### Evolução ao Longo do Tempo")
+                    fig_fadiga = px.line(
+                        df_filtrado_mes,
+                        x='Data',
+                        y=['HR Médio', 'Calorias por Minuto'],
+                        labels={
+                            'Data': 'Data do Treino',
+                            'value': 'Valor',
+                            'variable': 'Métrica'
+                        },
+                        title=f'HR Médio e Eficiência Energética - {selected_month_Intensity}/{ano}'
+                    )
+                    fig_fadiga.update_layout(
+                        yaxis_title="HR (bpm) / Calorias por Minuto (cal/min)",
+                        font=dict(color="black"),
+                        xaxis=dict(tickangle=45)
+                    )
+                    st.plotly_chart(fig_fadiga, use_container_width=True)
 
         with st.container():
             st.markdown("<h2 style='text-align: left;'>Diário de Treino</h2>", unsafe_allow_html=True)
