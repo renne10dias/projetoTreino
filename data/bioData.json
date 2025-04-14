@@ -760,7 +760,7 @@
         "detailed_sport_info": "OTHER_OUTDOOR",
         "device": "Polar Flow app",
         "distance": 19.0,
-        "duration": "PT3057.312S",
+        "duration": "PT3057S",
         "has_route": true,
         "heart_rate": {
             "average": 114,
@@ -778,7 +778,7 @@
         "detailed_sport_info": "RUNNING",
         "device": "Polar Flow app",
         "distance": 38.0,
-        "duration": "PT1916.170S",
+        "duration": "PT1916S",
         "has_route": true,
         "heart_rate": {
             "average": 107,
@@ -795,7 +795,7 @@
         "calories": 336,
         "detailed_sport_info": "LES_MILLS_BODYPUMP",
         "device": "Polar Flow app",
-        "duration": "PT3607.140S",
+        "duration": "PT3607S",
         "has_route": false,
         "heart_rate": {
             "average": 97,
@@ -813,7 +813,7 @@
         "detailed_sport_info": "RUNNING",
         "device": "Polar Flow app",
         "distance": 21.0,
-        "duration": "PT3414.396S",
+        "duration": "PT3414S",
         "has_route": true,
         "heart_rate": {
             "average": 119,
@@ -825,40 +825,5 @@
         "start_time": "2025-03-10T19:18:31",
         "start_time_utc_offset": -180,
         "upload_time": "2025-03-10T23:15:35Z"
-    },
-    {
-        "calories": 426,
-        "detailed_sport_info": "OTHER_INDOOR",
-        "device": "Polar Flow app",
-        "duration": "PT3598.158S",
-        "has_route": false,
-        "heart_rate": {
-            "average": 110,
-            "maximum": 150
-        },
-        "id": "0KZmVldo",
-        "polar_user": "https://www.polaraccesslink.com/v3/users/61922800",
-        "sport": "OTHER",
-        "start_time": "2025-03-11T18:44:30",
-        "start_time_utc_offset": -180,
-        "upload_time": "2025-03-11T22:44:41Z"
-    },
-    {
-        "calories": 392,
-        "detailed_sport_info": "RUNNING",
-        "device": "Polar Flow app",
-        "distance": 24.0,
-        "duration": "PT2923.206S",
-        "has_route": true,
-        "heart_rate": {
-            "average": 113,
-            "maximum": 151
-        },
-        "id": "5A21YZBM",
-        "polar_user": "https://www.polaraccesslink.com/v3/users/61922800",
-        "sport": "RUNNING",
-        "start_time": "2025-03-12T21:18:04",
-        "start_time_utc_offset": -180,
-        "upload_time": "2025-03-13T01:07:03Z"
     }
 ]

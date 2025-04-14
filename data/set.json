@@ -774,52 +774,54 @@
       "2025-03-05": {
       "type": "Treino de Glúteos, Quadríceps, Posterior de Coxa e Panturrilha",
       "exercises": [
-        
-          
+        {
+          "category": "Glúteos e Quadríceps",
+          "sets": [
             {
-              "category": "Glúteos e Quadríceps",
-              "sets": ["Flexão de quadril no solo com elástico"],
+              "exercise": "Flexão de quadril no solo com elástico",
               "details": "3 séries, 10 repetições, 45s descanso"
-              
             },
             {
-              "category": "Glúteos e Quadríceps",
-              "sets": ["Passo Lateral com Elástico na Coxa"],
+              "exercise": "Passo Lateral com Elástico na Coxa",
               "details": "3 séries, 30 repetições, 45s descanso"
             },
             {
-              "category": "Glúteos e Quadríceps",
-              "sets": ["Extensão de Quadril em Diagonal com Elástico na Perna"],
+              "exercise": "Extensão de Quadril em Diagonal com Elástico na Perna",
               "details": "3 séries, 20 repetições, 45s descanso"
-            },
+            }
+          ]
+        },
+        {
+          "category": "Quadríceps e Posterior de Coxa",
+          "sets": [
             {
-              "category": "Quadríceps e Posterior de Coxa",
-              "sets": ["Cadeira adutora"],
-              "details": "3 séries, 10 repetições, 45s descanso"
-             
-            },
-            { 
-              "category": "Quadríceps e Posterior de Coxa",
-              "sets": ["Cadeira extensora"],
+              "exercise": "Cadeira adutora",
               "details": "3 séries, 10 repetições, 45s descanso"
             },
             {
-              "category": "Quadríceps e Posterior de Coxa",
-              "sets": ["Leg press 45° ângulo de proteção"],              
+              "exercise": "Cadeira extensora ângulo de proteção",
               "details": "3 séries, 10 repetições, 45s descanso"
             },
             {
-              "category": "Quadríceps e Posterior de Coxa",
-              "sets": ["Agachamento com Elástico"],              
+              "exercise": "Leg press 45° ângulo de proteção",
+              "details": "3 séries, 10 repetições, 45s descanso"
+            },
+            {
+              "exercise": "Agachamento com Elástico",
               "details": "3 séries, 20 repetições, 45s descanso"
-            },
+            }
+          ]
+        },
+        {
+          "category": "Panturrilha",
+          "sets": [
             {
-              "category": "Panturrilha",
-              "sets": ["Panturrilha em pé na máquina"],
+              "exercise": "Panturrilha unilateral em pé",
               "details": "3 séries, 20 repetições, 20s descanso"
             }
-          ]  
-      
+          ]
+        }
+      ]
     },
     "2025-03-06":
     {
