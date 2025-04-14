@@ -357,25 +357,46 @@ class DashboardView:
                 df_calorias["Duração (min)"] = df_calorias["duration"].apply(self.service.parse_duration)
                 df_calorias["Calorias Queimadas"] = df_calorias["calories"]
                 df_calorias["Eficiência (cal/min)"] = df_calorias["Calorias Queimadas"] / df_calorias["Duração (min)"]
-                df_calorias["Tipo"] = df_calorias["sport"]
                 df_calorias["HR Médio"] = df_calorias["heart_rate"].apply(
                     lambda x: x["average"] if isinstance(x, dict) else "N/A")
                 df_calorias["HR Máximo"] = df_calorias["heart_rate"].apply(
                     lambda x: x["maximum"] if isinstance(x, dict) else "N/A")
 
-                fig_calorias = px.scatter(
-                    df_calorias,
-                    x="Duração (min)",
-                    y="Calorias Queimadas",
-                    size="Eficiência (cal/min)",
-                    color="Tipo",
-                    hover_data=["start_time", "HR Médio", "HR Máximo"],
-                    trendline="ols",
-                    title="Relação Tempo x Calorias Queimadas",
-                    labels={"Duração (min)": "Duração do Treino (min)",
-                            "Calorias Queimadas": "Calorias Queimadas (kcal)"}
+                # Calcular a zona de intensidade cardíaca
+                df_calorias['Zona'] = df_calorias.apply(
+                    lambda row: self.service.get_heart_rate_zone(row['HR Médio'], row['HR Máximo']),
+                    axis=1
                 )
-                st.plotly_chart(fig_calorias, use_container_width=True)
+
+                # Remover linhas com valores inválidos de HR
+                df_calorias = df_calorias[df_calorias['HR Médio'] != "N/A"]
+                df_calorias = df_calorias[df_calorias['HR Máximo'] != "N/A"]
+
+                if df_calorias.empty:
+                    st.warning("Nenhum dado válido disponível para exibir o gráfico.")
+                else:
+                    color_map = {
+                        "Zona 1 - Recuperação Ativa": '#FF4B4B',
+                        "Zona 2 - Aeróbico Leve": '#4CAF50',
+                        "Zona 3 - Aeróbico Moderado": '#FFC107',
+                        "Zona 4 - Limiar Anaeróbico": '#1E88E5',
+                        "Zona 5 - Alta Intensidade / VO2 Máx": '#AB47BC'
+                    }
+
+                    fig_calorias = px.scatter(
+                        df_calorias,
+                        x="Duração (min)",
+                        y="Calorias Queimadas",
+                        size="Eficiência (cal/min)",
+                        color="Zona",  # Alterado de "Tipo" para "Zona"
+                        color_discrete_map=color_map,
+                        hover_data=["start_time", "HR Médio", "HR Máximo"],
+                        trendline="ols",
+                        title="Relação Tempo x Calorias Queimadas",
+                        labels={"Duração (min)": "Duração do Treino (min)",
+                                "Calorias Queimadas": "Calorias Queimadas (kcal)"}
+                    )
+                    st.plotly_chart(fig_calorias, use_container_width=True)
 
         with st.container():
             st.markdown(
