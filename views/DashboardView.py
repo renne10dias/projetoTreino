@@ -5,7 +5,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots as sp
 from datetime import datetime
 
 from services.DashboardService.DashboardService import DashboardService
@@ -120,7 +119,7 @@ class DashboardView:
                 unsafe_allow_html=True
             )
 
-            df_filtrado, color_map = self.service.col1_intensidade_treino()
+            df_filtrado, color_map, selected_month_Intensity, selected_year_Intensity = self.service.col1_intensidade_treino()
 
             if df_filtrado.empty:
                 st.warning("Nenhum dado disponível para o período selecionado.")
@@ -434,13 +433,12 @@ class DashboardView:
                 "Zona 5 - Alta Intensidade / VO2 Máx": '#AB47BC'
             }
 
-            # Criar um único gráfico de dispersão com todas as zonas
             fig = px.scatter(
                 df,
                 x='HR Médio',
                 y='VO2 Estimado',
                 size='Calorias por Minuto',
-                color='Zona',  # Diferenciar as zonas por cor
+                color='Zona',
                 color_discrete_map=color_map,
                 labels={
                     'HR Médio': 'Frequência Cardíaca Média (bpm)',
@@ -455,7 +453,6 @@ class DashboardView:
                 }
             )
 
-            # Personalizar o hover
             fig.update_traces(
                 hovertemplate=(
                     "HR Médio: %{x} bpm<br>"
@@ -469,15 +466,14 @@ class DashboardView:
                 customdata=df[['HR Máximo', 'calories', 'Duração (min)', 'Calorias por Minuto']].values
             )
 
-            # Ajustar o layout do gráfico
             fig.update_layout(
                 height=400,
-                width=800,  # Ajuste a largura para um único gráfico
+                width=800,
                 title_text="Eficiência Cardiorrespiratória por Zona de Intensidade",
                 title_x=0.5,
                 xaxis_title="Frequência Cardíaca Média (bpm)",
                 yaxis_title="VO2 Estimado (mL/kg/min)",
-                showlegend=True,  # Mostrar a legenda para identificar as zonas
+                showlegend=True,
                 legend=dict(
                     x=1.05,
                     y=0.5,
@@ -489,9 +485,6 @@ class DashboardView:
             )
 
             st.plotly_chart(fig, use_container_width=True)
-
-
-
 
         with st.container():
             st.markdown(
@@ -606,49 +599,127 @@ class DashboardView:
         with st.container():
             st.markdown("<h2 style='text-align: left;'>Diário de Treino</h2>", unsafe_allow_html=True)
 
+            # Carregar os dados
             loader = LoadFile()
             set_data = loader.load_set_data()
 
-            meses_pt = {
-                1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",
-                6: "Junho", 7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro",
-                11: "Novembro", 12: "Dezembro"
+            # Mapear nomes dos meses para números
+            meses_pt_to_num = {
+                "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5,
+                "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10,
+                "Novembro": 11, "Dezembro": 12
             }
 
-            col_mes, col_ano = st.columns(2)
-            with col_mes:
-                mes_nome = st.selectbox("Mês", list(meses_pt.values()), index=9)
-                mes = [k for k, v in meses_pt.items() if v == mes_nome][0]
-            with col_ano:
-                anos_disponiveis = sorted(set(pd.to_datetime(list(set_data["schedule"].keys())).year))
-                ano = st.selectbox("Ano", anos_disponiveis,
-                                   index=anos_disponiveis.index(2024) if 2024 in anos_disponiveis else 0)
+            # Usar o mês e ano retornados por col1_intensidade_treino()
+            mes = meses_pt_to_num[selected_month_Intensity]
+            ano = selected_year_Intensity
 
+            # Filtrar treinos pelo mês e ano selecionados
             data_inicio = datetime(ano, mes, 1)
             data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
             treinos_mes = {date: info for date, info in set_data["schedule"].items()
                            if data_inicio <= datetime.strptime(date, '%Y-%m-%d') < data_fim}
 
             if not treinos_mes:
-                st.warning(f"Nenhum treino encontrado para {meses_pt[mes]}/{ano}.")
+                st.warning(f"Nenhum treino encontrado para {selected_month_Intensity}/{ano}.")
             else:
+                # Importar o componente de calendário
+                from streamlit_calendar import calendar
+
+                # Configurar opções do calendário
+                calendar_options = {
+                    "editable": False,
+                    "selectable": True,
+                    "headerToolbar": {
+                        "left": "prev,next today",
+                        "center": "title",
+                        "right": "dayGridMonth"
+                    },
+                    "initialView": "dayGridMonth",
+                    "initialDate": f"{ano}-{mes:02d}-01"
+                }
+
+                # Criar eventos para o calendário
+                calendar_events = []
                 for date, treino in sorted(treinos_mes.items()):
-                    with st.expander(f"Treino do dia {date}"):
+                    foi_treinar = bool(treino.get("exercises", []))
+                    evento = {
+                        "title": "Treino Realizado" if foi_treinar else "Treino Não Realizado",
+                        "start": date,
+                        "end": date,
+                        "color": "#00FF00" if foi_treinar else "#FF0000",
+                        "allDay": True
+                    }
+                    calendar_events.append(evento)
+
+                # Personalizar o estilo do calendário
+                custom_css = """
+                .fc {
+                    width: 100% !important;
+                    max-height: 600px;
+                    max-width: 1100px;  /* Ajustar o tamanho do calendário */
+                }
+                .fc-event-title {
+                    font-weight: 700;
+                }
+                .fc-toolbar-title {
+                    font-size: 1.5rem;
+                }
+                .fc-daygrid-day {
+                    font-size: 0.8rem;
+                }
+                """
+
+                # Criar colunas para o calendário e os detalhes do treino
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    # Exibir o calendário
+                    calendario = calendar(
+                        events=calendar_events,
+                        options=calendar_options,
+                        custom_css=custom_css,
+                        key=f"calendario_{mes}_{ano}"
+                    )
+
+                with col2:
+                    st.markdown("### Detalhes do Treino")
+
+                    # Determinar o treino a ser exibido (mais recente por padrão)
+                    if "selected_date" not in st.session_state:
+                        # Encontrar a data mais recente
+                        latest_date = max(treinos_mes.keys(), key=lambda d: datetime.strptime(d, '%Y-%m-%d'))
+                        st.session_state.selected_date = latest_date
+
+                    # Capturar clique no evento (eventClick)
+                    if calendario.get("eventClick"):
+                        event_data = calendario["eventClick"]["event"]
+                        data_clicada = event_data.get("start", None)
+                        if data_clicada:
+                            data_clicada = data_clicada.split("T")[0] if "T" in data_clicada else data_clicada
+                            if data_clicada in treinos_mes:
+                                st.session_state.selected_date = data_clicada
+
+                    # Exibir os detalhes do treino selecionado
+                    data_selecionada = st.session_state.selected_date
+                    if data_selecionada in treinos_mes:
+                        treino = treinos_mes[data_selecionada]
                         try:
                             df_treino = pd.DataFrame(treino["exercises"])
                             df_treino["type"] = treino["type"]
-
                             for col in ["category", "details", "sets"]:
                                 if col not in df_treino.columns:
                                     df_treino[col] = "Não informado"
                             df_treino["sets"] = df_treino["sets"].apply(
                                 lambda x: ", ".join(x) if isinstance(x, list) else str(x))
-
                             colunas_disponiveis = [col for col in ["type", "category", "details", "sets"] if
                                                    col in df_treino.columns]
+                            st.markdown(f"**Data Selecionada:** {data_selecionada}")
                             st.table(df_treino[colunas_disponiveis].rename(
                                 columns={"type": "Tipo", "category": "Categoria", "details": "Detalhes",
                                          "sets": "Exercícios"}
                             ))
                         except Exception as e:
-                            st.error(f"Erro ao processar o treino do dia {date}: {str(e)}")
+                            st.error(f"Erro ao processar o treino do dia {data_selecionada}: {str(e)}")
+                    else:
+                        st.info(f"Nenhum treino registrado para o dia {data_selecionada}.")

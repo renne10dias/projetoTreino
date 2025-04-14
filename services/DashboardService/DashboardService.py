@@ -61,7 +61,7 @@ class DashboardService:
             (self.df['start_time'].dt.month == mes_selecionado_num)
             ]
 
-        return [df_filtrado, color_map]
+        return [df_filtrado, color_map, self.selected_month_Intensity, self.selected_year_Intensity]
 
     # Função ajustada para resumo diário sem data específica
     def col2_resumo_diario(self):
