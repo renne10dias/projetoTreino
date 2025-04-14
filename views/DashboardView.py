@@ -286,28 +286,18 @@ class DashboardView:
                 workouts = self.loadFile.load_bio_data()
                 zones, calories, counts = self.service.mostrar_dados_de_treino_por_zona()
 
+                # Criar o DataFrame apenas com Zonas e Número de Treinos
                 df = pd.DataFrame({
                     'Zonas': zones,
-                    'Calorias Totais': calories,
                     'Número de Treinos': counts
                 })
 
-                df_filtrado = df[(df['Calorias Totais'] > 0) | (df['Número de Treinos'] > 0)]
+                # Filtrar para exibir apenas zonas com treinos
+                df_filtrado = df[df['Número de Treinos'] > 0]
 
                 if df_filtrado.empty:
                     st.warning("Nenhum dado disponível para exibir no gráfico de barras.")
                 else:
-                    df_long = pd.melt(
-                        df_filtrado,
-                        id_vars=['Zonas'],
-                        value_vars=['Calorias Totais', 'Número de Treinos'],
-                        var_name='Categoria',
-                        value_name='Valor'
-                    )
-
-                    df_long['Quantidade de Treinos'] = df_long['Zonas'].map(
-                        df_filtrado.set_index('Zonas')['Número de Treinos'])
-
                     color_map = {
                         "Zona 1 - Recuperação Ativa": '#FF4B4B',
                         "Zona 2 - Aeróbico Leve": '#4CAF50',
@@ -317,13 +307,13 @@ class DashboardView:
                     }
 
                     fig2 = px.bar(
-                        df_long,
+                        df_filtrado,
                         x='Zonas',
-                        y='Valor',
+                        y='Número de Treinos',
                         color='Zonas',
                         color_discrete_map=color_map,
                         labels={
-                            'Valor': 'Calorias Totais / Número de Treinos',
+                            'Número de Treinos': 'Número de Treinos',
                             'Zonas': 'Zonas de Frequência Cardíaca'
                         },
                         category_orders={"Zonas": [
@@ -333,13 +323,11 @@ class DashboardView:
                             "Zona 4 - Limiar Anaeróbico",
                             "Zona 5 - Alta Intensidade / VO2 Máx"
                         ]},
-                        barmode='group',
-                        text=df_long['Valor'].apply(lambda x: f'{int(x)}'),
-                        custom_data=['Categoria', 'Quantidade de Treinos']
+                        text=df_filtrado['Número de Treinos'].apply(lambda x: f'{int(x)}')
                     )
 
                     fig2.update_traces(
-                        hovertemplate="%{customdata[0]}: %{y}<br>Quantidade de treinos = %{customdata[1]}<br>Zona: %{x}",
+                        hovertemplate="Zona: %{x}<br>Número de treinos: %{y}",
                         textposition='auto'
                     )
 
