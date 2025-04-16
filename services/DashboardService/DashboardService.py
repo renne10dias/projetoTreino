@@ -216,11 +216,19 @@ class DashboardService:
         else:
             return "Zona 5 - Alta Intensidade / VO2 Máx"
 
-    def mostrar_dados_de_treino_por_zona(self):
-        """Prepara os dados de treino por zona de frequência cardíaca."""
+    def mostrar_dados_de_treino_por_zona(self, mes, ano):
+        """Prepara os dados de treino por zona de frequência cardíaca para o mês e ano especificados.
+
+        Args:
+            mes (int): Número do mês (1 a 12).
+            ano (int): Ano (e.g., 2024).
+
+        Returns:
+            tuple: (zones, calories, counts) com as zonas, calorias totais e contagem de treinos por zona.
+        """
         workouts = self.loadFile.load_bio_data()  # Supondo que retorna o JSON de bio_data
         if workouts is None:
-            workouts = workouts
+            return [], [], []  # Retornar listas vazias se não houver dados
 
         # Inicializar dicionário com todas as zonas possíveis usando os nomes completos
         zone_data = {
@@ -231,8 +239,20 @@ class DashboardService:
             "Zona 5 - Alta Intensidade / VO2 Máx": {"calories": 0, "count": 0}
         }
 
-        # Processar cada treino e acumular calorias e contagem por zona
-        for workout in workouts:
+        # Definir o intervalo de datas para o mês e ano especificados
+        from datetime import datetime
+        data_inicio = datetime(ano, mes, 1)
+        data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
+
+        # Filtrar treinos pelo mês e ano
+        filtered_workouts = [
+            workout for workout in workouts
+            if "start_time" in workout and workout["start_time"]
+               and data_inicio <= datetime.strptime(workout["start_time"], '%Y-%m-%dT%H:%M:%S') < data_fim
+        ]
+
+        # Processar cada treino filtrado e acumular calorias e contagem por zona
+        for workout in filtered_workouts:
             avg_hr = workout["heart_rate"]["average"]
             max_hr = workout["heart_rate"].get("maximum", 200)  # Usar 200 como padrão se não fornecido
             calories = workout["calories"]

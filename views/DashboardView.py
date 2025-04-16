@@ -111,168 +111,31 @@ class DashboardView:
                        </div>
                    """, unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
+        # Obter os dados filtrados e os valores de mês e ano selecionados
+        df_filtrado, color_map, selected_month_Intensity, selected_year_Intensity = self.service.col1_intensidade_treino()
 
-        with col1:
-            st.markdown(
-                "<br><h2 style='text-align: left;'>Intensidade do Treino</h2>",
-                unsafe_allow_html=True
-            )
+        # Mapear nomes dos meses para números
+        meses_pt_to_num = {
+            "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5,
+            "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10,
+            "Novembro": 11, "Dezembro": 12
+        }
+        mes = meses_pt_to_num[selected_month_Intensity]
+        ano = selected_year_Intensity
+        data_inicio = datetime(ano, mes, 1)
+        data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
 
-            df_filtrado, color_map, selected_month_Intensity, selected_year_Intensity = self.service.col1_intensidade_treino()
+        # Carregar os dados de bio_data
+        workouts = self.loadFile.load_bio_data()
+        if not workouts:
+            st.error("Nenhum dado de treino disponível.")
+            return
 
-            if df_filtrado.empty:
-                st.warning("Nenhum dado disponível para o período selecionado.")
-                return
-
-            df_cumulativo = df_filtrado.groupby('cluster_category')['heart_rate_avg'].sum().reset_index()
-
-            fig = px.bar(
-                df_cumulativo,
-                x='cluster_category',
-                y='heart_rate_avg',
-                color='cluster_category',
-                color_discrete_map=color_map,
-                labels={
-                    'heart_rate_avg': 'Frequência Cardíaca Média (bpm)',
-                    'cluster_category': 'Intensidade do Treino'
-                },
-                category_orders={"cluster_category": ["Alta Intensidade", "Intensidade Moderada", "Baixa Intensidade"]}
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col2:
-            st.markdown(
-                "<br><h2 style='text-align: left;'>Indicador</h2>",
-                unsafe_allow_html=True
-            )
-
-            bio_data_filtrado, selected_month_Intensity, calorias_por_mes, color_map = self.service.col3_indicador()
-
-            metric_options = ["Calorias", "Duração", "Frequência Cardíaca Máxima", "Frequência Cardíaca Média"]
-            selected_metric = st.selectbox("", metric_options)
-
-            bio_data_filtrado["cluster_category"] = bio_data_filtrado["cluster_category"].astype(str)
-
-            category_colors = color_map
-
-            if selected_metric == "Calorias":
-                df_plot = pd.DataFrame({
-                    "Data": bio_data_filtrado["Data"],
-                    "Calorias Queimadas": bio_data_filtrado["Calorias"],
-                    "Intensidade": bio_data_filtrado["cluster_category"]
-                })
-
-                fig_calorias = px.scatter(
-                    df_plot,
-                    x="Data",
-                    y="Calorias Queimadas",
-                    title=f"Calorias Queimadas Mensais - {selected_month_Intensity}",
-                    labels={"Data": "Data", "Calorias Queimadas": "Calorias"},
-                    color="Intensidade",
-                    color_discrete_map=category_colors
-                )
-
-            elif selected_metric == "Duração":
-                df_plot = pd.DataFrame({
-                    "Data": bio_data_filtrado["Data"],
-                    "Duração do Treino": bio_data_filtrado["Duração"],
-                    "Intensidade": bio_data_filtrado["cluster_category"]
-                })
-
-                fig_calorias = px.scatter(
-                    df_plot,
-                    x="Data",
-                    y="Duração do Treino",
-                    title=f"Durações do Treino Mensais - {selected_month_Intensity}",
-                    labels={"Data": "Data", "Duração do Treino": "Duração (minutos)"},
-                    color="Intensidade",
-                    color_discrete_map=category_colors
-                )
-
-            elif selected_metric == "Frequência Cardíaca Máxima":
-                df_plot = pd.DataFrame({
-                    "Data": bio_data_filtrado["Data"],
-                    "Frequência Cardíaca": bio_data_filtrado["FC_Max"],
-                    "Intensidade": bio_data_filtrado["cluster_category"]
-                })
-
-                fig_calorias = px.scatter(
-                    df_plot,
-                    x="Data",
-                    y="Frequência Cardíaca",
-                    title=f"Frequências Cardíacas Máximas - {selected_month_Intensity}",
-                    labels={"Data": "Data", "Frequência Cardíaca": "Frequência Cardíaca (bpm)"},
-                    color="Intensidade",
-                    color_discrete_map=category_colors
-                )
-
-            else:  # Frequência Cardíaca Média
-                df_plot = pd.DataFrame({
-                    "Data": bio_data_filtrado["Data"],
-                    "Frequência Cardíaca Média": bio_data_filtrado["FC_Media"],
-                    "Intensidade": bio_data_filtrado["cluster_category"]
-                })
-
-                fig_calorias = px.scatter(
-                    df_plot,
-                    x="Data",
-                    y="Frequência Cardíaca Média",
-                    title=f"Frequências Cardíacas Médias - {selected_month_Intensity}",
-                    labels={"Data": "Data", "Frequência Cardíaca Média": "Frequência Cardíaca (bpm)"},
-                    color="Intensidade",
-                    color_discrete_map=category_colors
-                )
-
-            fig_calorias.update_layout(
-                xaxis_title="Data",
-                template="plotly_dark",
-                xaxis=dict(tickangle=45)
-            )
-
-            st.plotly_chart(fig_calorias, use_container_width=True)
-
-        st.subheader("📌 Tabela de Treinos Recentes")
-
-        with st.expander("📋 Últimos 5 Treinos"):
-            tabela_categorias_dia = self.service.col4_exercícios_por_categoria()
-
-            if not tabela_categorias_dia.empty:
-                fig = go.Figure(
-                    data=[go.Table(
-                        columnorder=[1, 2],
-                        columnwidth=[20, 50],
-                        header=dict(
-                            values=["📅 Data", "🏋️ Tipo"],
-                            font=dict(size=14, color='white'),
-                            fill_color='#264653',
-                            align=['left', 'center'],
-                            height=30
-                        ),
-                        cells=dict(
-                            values=[
-                                tabela_categorias_dia["Data"].tolist(),
-                                tabela_categorias_dia["Tipo"].tolist()
-                            ],
-                            font=dict(size=12, color='black'),
-                            fill_color=[['#F6F6F6', '#E8E8E8'] * (len(tabela_categorias_dia) // 2)],
-                            align=['left', 'center'],
-                            height=25
-                        )
-                    )]
-                )
-
-                fig.update_layout(
-                    title_text="📊 Resumo dos Últimos 5 Treinos",
-                    title_font=dict(size=18, color='#264653'),
-                    margin=dict(l=0, r=10, b=10, t=40),
-                    height=300
-                )
-
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.warning("⚠️ Nenhum treino encontrado para os últimos 5 registros.")
+        # Criar um DataFrame e filtrar pelo mês e ano selecionados
+        df_workouts = pd.DataFrame(workouts)
+        df_workouts['Data'] = pd.to_datetime(df_workouts['start_time'])
+        df_workouts_filtrado = df_workouts[
+            (df_workouts['Data'] >= data_inicio) & (df_workouts['Data'] < data_fim)].copy()
 
         with st.container():
             col1, col2 = st.columns(2)
@@ -283,8 +146,8 @@ class DashboardView:
                     unsafe_allow_html=True
                 )
 
-                workouts = self.loadFile.load_bio_data()
-                zones, calories, counts = self.service.mostrar_dados_de_treino_por_zona()
+                # Essa seção já usa a função ajustada mostrar_dados_de_treino_por_zona
+                zones, calories, counts = self.service.mostrar_dados_de_treino_por_zona(mes, ano)
 
                 # Criar o DataFrame apenas com Zonas e Número de Treinos
                 df = pd.DataFrame({
@@ -353,7 +216,8 @@ class DashboardView:
                             Treinos curtos e intensos podem apresentar maior eficiência, enquanto treinos longos podem mostrar diminuição de retorno.
                             """)
 
-                df_calorias = pd.DataFrame(workouts)
+                # Usar o DataFrame filtrado
+                df_calorias = df_workouts_filtrado.copy()
                 df_calorias["Duração (min)"] = df_calorias["duration"].apply(self.service.parse_duration)
                 df_calorias["Calorias Queimadas"] = df_calorias["calories"]
                 df_calorias["Eficiência (cal/min)"] = df_calorias["Calorias Queimadas"] / df_calorias["Duração (min)"]
@@ -388,11 +252,11 @@ class DashboardView:
                         x="Duração (min)",
                         y="Calorias Queimadas",
                         size="Eficiência (cal/min)",
-                        color="Zona",  # Alterado de "Tipo" para "Zona"
+                        color="Zona",
                         color_discrete_map=color_map,
                         hover_data=["start_time", "HR Médio", "HR Máximo"],
                         trendline="ols",
-                        title="Relação Tempo x Calorias Queimadas",
+                        title=f"Relação Tempo x Calorias Queimadas - {selected_month_Intensity}/{ano}",
                         labels={"Duração (min)": "Duração do Treino (min)",
                                 "Calorias Queimadas": "Calorias Queimadas (kcal)"}
                     )
@@ -404,96 +268,95 @@ class DashboardView:
                 unsafe_allow_html=True
             )
 
-            df = pd.DataFrame(workouts)
+            # Usar o DataFrame filtrado
+            df = df_workouts_filtrado.copy()
 
             df = df.dropna(subset=['heart_rate', 'calories'])
             df = df[df['calories'] > 0]
 
             if df.empty:
                 st.warning("Nenhum dado disponível para exibir no gráfico de dispersão.")
-                return
+            else:
+                df['HR Médio'] = df['heart_rate'].apply(lambda x: x['average'] if isinstance(x, dict) else x)
+                df['HR Máximo'] = df['heart_rate'].apply(lambda x: x['maximum'] if isinstance(x, dict) else 200)
 
-            df['HR Médio'] = df['heart_rate'].apply(lambda x: x['average'] if isinstance(x, dict) else x)
-            df['HR Máximo'] = df['heart_rate'].apply(lambda x: x['maximum'] if isinstance(x, dict) else 200)
+                df['Zona'] = df.apply(lambda row: self.service.get_heart_rate_zone(row['HR Médio'], row['HR Máximo']),
+                                      axis=1)
 
-            df['Zona'] = df.apply(lambda row: self.service.get_heart_rate_zone(row['HR Médio'], row['HR Máximo']),
-                                  axis=1)
+                df['VO2 Estimado'] = df['HR Médio'].apply(lambda x: 0.835 * x - 39.3)
 
-            df['VO2 Estimado'] = df['HR Médio'].apply(lambda x: 0.835 * x - 39.3)
+                df['Duração (min)'] = df['duration'].apply(self.service.parse_duration)
 
-            df['Duração (min)'] = df['duration'].apply(self.service.parse_duration)
+                df['Calorias por Minuto'] = df['calories'] / df['Duração (min)']
 
-            df['Calorias por Minuto'] = df['calories'] / df['Duração (min)']
+                unique_zones = df['Zona'].unique()
+                num_zones = len(unique_zones)
 
-            unique_zones = df['Zona'].unique()
-            num_zones = len(unique_zones)
+                if num_zones == 0:
+                    st.warning("Nenhuma zona de treino identificada.")
+                else:
+                    st.info(f"Zonas disponíveis no dataset: {', '.join(unique_zones)}")
 
-            if num_zones == 0:
-                st.warning("Nenhuma zona de treino identificada.")
-                return
+                    color_map = {
+                        "Zona 1 - Recuperação Ativa": '#FF4B4B',
+                        "Zona 2 - Aeróbico Leve": '#4CAF50',
+                        "Zona 3 - Aeróbico Moderado": '#FFC107',
+                        "Zona 4 - Limiar Anaeróbico": '#1E88E5',
+                        "Zona 5 - Alta Intensidade / VO2 Máx": '#AB47BC'
+                    }
 
-            st.info(f"Zonas disponíveis no dataset: {', '.join(unique_zones)}")
+                    fig = px.scatter(
+                        df,
+                        x='HR Médio',
+                        y='VO2 Estimado',
+                        size='Calorias por Minuto',
+                        color='Zona',
+                        color_discrete_map=color_map,
+                        labels={
+                            'HR Médio': 'Frequência Cardíaca Média (bpm)',
+                            'VO2 Estimado': 'VO2 Estimado (mL/kg/min)',
+                            'Zona': 'Zona de Intensidade'
+                        },
+                        hover_data={
+                            'calories': True,
+                            'Duração (min)': ':.2f',
+                            'Calorias por Minuto': ':.2f',
+                            'HR Máximo': True
+                        }
+                    )
 
-            color_map = {
-                "Zona 1 - Recuperação Ativa": '#FF4B4B',
-                "Zona 2 - Aeróbico Leve": '#4CAF50',
-                "Zona 3 - Aeróbico Moderado": '#FFC107',
-                "Zona 4 - Limiar Anaeróbico": '#1E88E5',
-                "Zona 5 - Alta Intensidade / VO2 Máx": '#AB47BC'
-            }
+                    fig.update_traces(
+                        hovertemplate=(
+                            "HR Médio: %{x} bpm<br>"
+                            "HR Máximo: %{customdata[0]} bpm<br>"
+                            "VO2 Estimado: %{y:.2f} mL/kg/min<br>"
+                            "Calorias Totais: %{customdata[1]}<br>"
+                            "Duração: %{customdata[2]:.2f} min<br>"
+                            "Eficiência: %{customdata[3]:.2f} cal/min<br>"
+                            "Zona: %{fullData.name}"
+                        ),
+                        customdata=df[['HR Máximo', 'calories', 'Duração (min)', 'Calorias por Minuto']].values
+                    )
 
-            fig = px.scatter(
-                df,
-                x='HR Médio',
-                y='VO2 Estimado',
-                size='Calorias por Minuto',
-                color='Zona',
-                color_discrete_map=color_map,
-                labels={
-                    'HR Médio': 'Frequência Cardíaca Média (bpm)',
-                    'VO2 Estimado': 'VO2 Estimado (mL/kg/min)',
-                    'Zona': 'Zona de Intensidade'
-                },
-                hover_data={
-                    'calories': True,
-                    'Duração (min)': ':.2f',
-                    'Calorias por Minuto': ':.2f',
-                    'HR Máximo': True
-                }
-            )
+                    fig.update_layout(
+                        height=400,
+                        width=800,
+                        title_text=f"Eficiência Cardiorrespiratória por Zona de Intensidade - {selected_month_Intensity}/{ano}",
+                        title_x=0.5,
+                        xaxis_title="Frequência Cardíaca Média (bpm)",
+                        yaxis_title="VO2 Estimado (mL/kg/min)",
+                        showlegend=True,
+                        legend=dict(
+                            x=1.05,
+                            y=0.5,
+                            xanchor='left',
+                            yanchor='middle',
+                            orientation='v',
+                            title_text='Zonas'
+                        )
+                    )
 
-            fig.update_traces(
-                hovertemplate=(
-                    "HR Médio: %{x} bpm<br>"
-                    "HR Máximo: %{customdata[0]} bpm<br>"
-                    "VO2 Estimado: %{y:.2f} mL/kg/min<br>"
-                    "Calorias Totais: %{customdata[1]}<br>"
-                    "Duração: %{customdata[2]:.2f} min<br>"
-                    "Eficiência: %{customdata[3]:.2f} cal/min<br>"
-                    "Zona: %{fullData.name}"
-                ),
-                customdata=df[['HR Máximo', 'calories', 'Duração (min)', 'Calorias por Minuto']].values
-            )
-
-            fig.update_layout(
-                height=400,
-                width=800,
-                title_text="Eficiência Cardiorrespiratória por Zona de Intensidade",
-                title_x=0.5,
-                xaxis_title="Frequência Cardíaca Média (bpm)",
-                yaxis_title="VO2 Estimado (mL/kg/min)",
-                showlegend=True,
-                legend=dict(
-                    x=1.05,
-                    y=0.5,
-                    xanchor='left',
-                    yanchor='middle',
-                    orientation='v',
-                    title_text='Zonas'
-                )
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True)
 
         with st.container():
             st.markdown(
@@ -507,69 +370,74 @@ class DashboardView:
             Além disso, se a HR Média aumenta sem aumento correspondente de calorias queimadas, pode ser um sinal de ineficiência energética e necessidade de ajuste no treinamento.
             """)
 
-            df['Data'] = pd.to_datetime(df['start_time'])
+            # Usar o DataFrame filtrado
+            df = df_workouts_filtrado.copy()
 
-            # Mapear nomes dos meses para números
-            meses_pt_to_num = {
-                "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5,
-                "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10,
-                "Novembro": 11, "Dezembro": 12
-            }
-
-            # Filtrar os dados pelo mês e ano selecionados
-            mes = meses_pt_to_num[selected_month_Intensity]
-            ano = selected_year_Intensity
-            data_inicio = datetime(ano, mes, 1)
-            data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
-            df_filtrado_mes = df[(df['Data'] >= data_inicio) & (df['Data'] < data_fim)].copy()
-
-            if df_filtrado_mes.empty:
+            if df.empty:
                 st.warning(f"Nenhum dado disponível para {selected_month_Intensity}/{ano}.")
             else:
-                # Calcular a recuperação cardíaca (HR Máximo - HR Médio)
-                df_filtrado_mes['Recuperação Cardíaca'] = df_filtrado_mes['HR Máximo'] - df_filtrado_mes['HR Médio']
+                # Criar as colunas 'HR Médio' e 'HR Máximo'
+                df['HR Médio'] = df['heart_rate'].apply(lambda x: x['average'] if isinstance(x, dict) else None)
+                df['HR Máximo'] = df['heart_rate'].apply(lambda x: x['maximum'] if isinstance(x, dict) else 200)
 
-                col1, col2 = st.columns(2)
+                # Criar a coluna 'Duração (min)' e 'Calorias por Minuto'
+                df['Duração (min)'] = df['duration'].apply(self.service.parse_duration)
+                df['Calorias por Minuto'] = df['calories'] / df['Duração (min)']
 
-                with col1:
-                    st.markdown("#### Recuperação Cardíaca ao Longo do Mês")
-                    fig_recuperacao = px.line(
-                        df_filtrado_mes,
-                        x='Data',
-                        y='Recuperação Cardíaca',
-                        labels={
-                            'Data': 'Data do Treino',
-                            'Recuperação Cardíaca': 'Recuperação Cardíaca (bpm)'
-                        },
-                        title=f'Recuperação Cardíaca - {selected_month_Intensity}/{ano}'
-                    )
-                    fig_recuperacao.update_layout(
-                        xaxis_title="Data",
-                        yaxis_title="Recuperação Cardíaca (bpm)",
-                        font=dict(color="black"),
-                        xaxis=dict(tickangle=45)
-                    )
-                    st.plotly_chart(fig_recuperacao, use_container_width=True)
+                # Remover linhas com valores nulos ou inválidos
+                df = df.dropna(subset=['HR Médio', 'HR Máximo', 'Duração (min)', 'Calorias por Minuto'])
+                df = df[df['Duração (min)'] > 0]  # Evitar divisão por zero
 
-                with col2:
-                    st.markdown("#### Evolução ao Longo do Tempo")
-                    fig_fadiga = px.line(
-                        df_filtrado_mes,
-                        x='Data',
-                        y=['HR Médio', 'Calorias por Minuto'],
-                        labels={
-                            'Data': 'Data do Treino',
-                            'value': 'Valor',
-                            'variable': 'Métrica'
-                        },
-                        title=f'HR Médio e Eficiência Energética - {selected_month_Intensity}/{ano}'
-                    )
-                    fig_fadiga.update_layout(
-                        yaxis_title="HR (bpm) / Calorias por Minuto (cal/min)",
-                        font=dict(color="black"),
-                        xaxis=dict(tickangle=45)
-                    )
-                    st.plotly_chart(fig_fadiga, use_container_width=True)
+                if df.empty:
+                    st.warning(
+                        f"Nenhum dado válido de frequência cardíaca ou calorias disponível para {selected_month_Intensity}/{ano}.")
+                else:
+                    # Calcular a recuperação cardíaca (HR Máximo - HR Médio)
+                    df['Recuperação Cardíaca'] = df['HR Máximo'] - df['HR Médio']
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.markdown("#### Recuperação Cardíaca ao Longo do Mês")
+                        fig_recuperacao = px.line(
+                            df,
+                            x='Data',
+                            y='Recuperação Cardíaca',
+                            labels={
+                                'Data': 'Data do Treino',
+                                'Recuperação Cardíaca': 'Recuperação Cardíaca (bpm)'
+                            },
+                            title=f'Recuperação Cardíaca - {selected_month_Intensity}/{ano}'
+                        )
+                        fig_recuperacao.update_layout(
+                            xaxis_title="Data",
+                            yaxis_title="Recuperação Cardíaca (bpm)",
+                            font=dict(color="black"),
+                            xaxis=dict(tickangle=45)
+                        )
+                        st.plotly_chart(fig_recuperacao, use_container_width=True)
+
+                    with col2:
+                        st.markdown("#### Evolução ao Longo do Tempo")
+                        fig_fadiga = px.line(
+                            df,
+                            x='Data',
+                            y=['HR Médio', 'Calorias por Minuto'],
+                            labels={
+                                'Data': 'Data do Treino',
+                                'value': 'Valor',
+                                'variable': 'Métrica'
+                            },
+                            title=f'HR Médio e Eficiência Energética - {selected_month_Intensity}/{ano}'
+                        )
+                        fig_fadiga.update_layout(
+                            yaxis_title="HR (bpm) / Calorias por Minuto (cal/min)",
+                            font=dict(color="black"),
+                            xaxis=dict(tickangle=45)
+                        )
+                        st.plotly_chart(fig_fadiga, use_container_width=True)
+
+
 
         with st.container():
             st.markdown("<h2 style='text-align: left;'>Diário de Treino</h2>", unsafe_allow_html=True)
@@ -578,20 +446,7 @@ class DashboardView:
             loader = LoadFile()
             set_data = loader.load_set_data()
 
-            # Mapear nomes dos meses para números
-            meses_pt_to_num = {
-                "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Abril": 4, "Maio": 5,
-                "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9, "Outubro": 10,
-                "Novembro": 11, "Dezembro": 12
-            }
-
-            # Usar o mês e ano retornados por col1_intensidade_treino()
-            mes = meses_pt_to_num[selected_month_Intensity]
-            ano = selected_year_Intensity
-
             # Filtrar treinos pelo mês e ano selecionados
-            data_inicio = datetime(ano, mes, 1)
-            data_fim = datetime(ano, mes + 1, 1) if mes < 12 else datetime(ano + 1, 1, 1)
             treinos_mes = {date: info for date, info in set_data["schedule"].items()
                            if data_inicio <= datetime.strptime(date, '%Y-%m-%d') < data_fim}
 
