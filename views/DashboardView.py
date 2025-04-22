@@ -8,30 +8,30 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 from services.DashboardService.DashboardService import DashboardService
-from services.DashboardService.DashboardUtils import DashboardUtils
+#from services.DashboardService.DashboardUtils import DashboardUtils
 from utils.LoadFile import LoadFile
-from utils.PolarAccessLinkAdapter import PolarAccessLinkAdapter
+#from utils.PolarAccessLinkAdapter import PolarAccessLinkAdapter
 
 
 class DashboardView:
 
     def __init__(self):
         self.service = DashboardService()
-        self.dashboardUtils = DashboardUtils()
+        #self.dashboardUtils = DashboardUtils()
         self.loadFile = LoadFile()
         self.data_selecionada_card_table = None
 
-    def exibir_informacoes_usuario(self):
+    '''def exibir_informacoes_usuario(self):
         # Instanciar a classe adaptadora
         instancia = PolarAccessLinkAdapter()
         # Obter informações do usuário
         user_info = instancia.get_user_information()
-        return user_info
+        return user_info'''
 
     def create_intensity_chart(self):
         st.set_page_config(page_title='Dashboard - Treino', layout='wide')
 
-        informacoes_usuario = self.exibir_informacoes_usuario()
+        '''informacoes_usuario = self.exibir_informacoes_usuario()
         primeiro_nome = informacoes_usuario.get("first-name", "Atributo não encontrado")
         ultimo_nome = informacoes_usuario.get("last-name", "Atributo não encontrado")
         peso = informacoes_usuario.get("weight", "Atributo não encontrado")
@@ -39,13 +39,12 @@ class DashboardView:
 
         st.sidebar.header("Olá, " + primeiro_nome + " " + ultimo_nome)
         st.sidebar.write(f"Peso: {peso} kg")
-        st.sidebar.write(f"Altura: {altura} cm")
+        st.sidebar.write(f"Altura: {altura} cm")'''
 
-        treino_data = self.dashboardUtils.load_treino_data()
+        #treino_data = self.dashboardUtils.load_treino_data()
 
         img_heart_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-solid.svg")
-        img_heart_solid_pulse = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                             "../images/heart-pulse-solid.svg")
+        img_heart_solid_pulse = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/heart-pulse-solid.svg")
         img_fire_solid = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../images/fire-solid.svg")
 
         with open(img_heart_solid, "r") as file:
